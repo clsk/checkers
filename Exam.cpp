@@ -13,7 +13,7 @@ using namespace std;
 
 int main()
 {
-	// 1	
+	// 1
 	Game::instance().create_board();
 
 	// 2
@@ -27,6 +27,8 @@ int main()
 		cout << "Possible Move: (" << (*Iter)->pos.x << "," << (*Iter)->pos.y << ")" << endl;
 
     Board& board = Game::instance().get_board();
+    board.print();
+    board.move_piece(Point(1,5), Point(2,4));
     board.print();
 
 	return 0;

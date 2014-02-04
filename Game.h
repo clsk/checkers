@@ -12,23 +12,23 @@
 #define DIR_DOWN 1
 
 struct TreeNode
-{   
-	Node *pos;
-	TreeNode* left;
-	TreeNode* right;
-	int space; // filled = 1, empty = 0;
+{
+    Node *pos;
+    TreeNode* left;
+    TreeNode* right;
+    int space; // filled = 1, empty = 0;
 };
 
 class Game
 {
 public:
-	static Game &instance()
-	{
-		if (m_instance == NULL)
-			m_instance = new Game();
+    static Game &instance()
+    {
+        if (m_instance == NULL)
+            m_instance = new Game();
 
-		return *m_instance;
-	}
+        return *m_instance;
+    }
 
 	void create_board()
 	{

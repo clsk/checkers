@@ -31,7 +31,7 @@ void Game::create_pieces()
 			piece->location = node;
 			node->piece = piece;
 			black_pieces[i] = piece;
-			cout << i << " - Creating black piece at (" << pos.x << "," << pos.y << ")" << endl;
+			//cout << i << " - Creating black piece at (" << pos.x << "," << pos.y << ")" << endl;
 			i++;
 		}
 	}
@@ -54,7 +54,7 @@ void Game::create_pieces()
 			piece->location = node;
 			node->piece = piece;
 			red_pieces[i] = piece;
-			cout << i << " - Creating red piece at (" << pos.x << "," << pos.y << ")" << endl;
+			//cout << i << " - Creating red piece at (" << pos.x << "," << pos.y << ")" << endl;
 			i++;
 		}
 	}
