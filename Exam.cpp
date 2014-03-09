@@ -8,6 +8,7 @@
 
 #include "Game.h"
 #include "Board.h"
+#include "MoveMemento.h"
 
 using namespace std;
 
@@ -28,8 +29,13 @@ int main()
 
     Board& board = Game::instance().get_board();
     board.print();
-    board.move_piece(Point(1,5), Point(2,4));
+    cout << endl;
+    MoveMemento memento = board.get_memento();
+//    memento.move(Point(1,5), Point(2,4));
+    memento.move(Point(4,2), Point(6,4));
+    memento.move(Point(3,1), Point(4,2));
     board.print();
+    Game::instance().print_possible_jumps(board.get_node(Point(7,5))->piece);
 
 	return 0;
 }

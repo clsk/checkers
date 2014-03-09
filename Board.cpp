@@ -3,7 +3,14 @@ using std::cout;
 using std::endl;
 
 #include "Board.h"
+#include "Piece.h"
 #include "Game.h"
+#include "MoveMemento.h"
+
+MoveMemento Board::get_memento()
+{
+    return MoveMemento(*this);
+}
 
 void Board::link_adjacent_nodes(Node* node)
 {
@@ -64,24 +71,24 @@ Node* Board::get_node(const Point& pos)
 	if (Iter != nodes.end())
 		return Iter->second;
 	else
-		return NULL;
+		return nullptr;
 }
 
 bool Board::move_piece(const Point& from, const Point& to)
 {
     Node* from_node = get_node(from);
-    if (from_node == NULL)
+    if (from_node == nullptr)
         return false;
 
     Node* to_node = get_node(to);
-    if (to_node == NULL)
+    if (to_node == nullptr)
         return false;
 
     Piece *piece = from_node->piece;
-    if (piece == NULL)
+    if (piece == nullptr)
         return false;
 
-    from_node->piece = NULL;
+    from_node->piece = nullptr;
     to_node->piece = piece;
     piece->location = to_node;
 
@@ -103,7 +110,7 @@ void Board::print()
                 point.x = x;
             }
             Piece* piece = get_node(Point( (odd) ? x+1 : x,y))->piece;
-            if (piece == NULL)
+            if (piece == nullptr)
                 cout << "|   ";
             else if (piece->color == Piece::Red) {
                 cout << "| " << (piece->is_king ? "R " : "r ");
@@ -116,6 +123,7 @@ void Board::print()
             }
         }
         cout << "|" << y << endl;
+        cout << "  --- --- --- --- --- --- --- ---" << endl;
     }
     cout << "   0   1   2   3   4   5   6   7" << endl;
 }

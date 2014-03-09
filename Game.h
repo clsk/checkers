@@ -3,13 +3,13 @@
 
 #include <vector>
 #include <list>
+#include <cstdint>
 
 #include "Board.h"
 #include "Piece.h"
 
 #define PIECES_COUNT 12
-#define DIR_UP 0
-#define DIR_DOWN 1
+enum class Direction : std::uint8_t;
 
 struct TreeNode
 {
@@ -24,7 +24,7 @@ class Game
 public:
     static Game &instance()
     {
-        if (m_instance == NULL)
+        if (m_instance == nullptr)
             m_instance = new Game();
 
         return *m_instance;
@@ -40,12 +40,14 @@ public:
 
 	void possible_moves(Piece* piece, std::vector<Node*> &nodes);
 	void possible_moves_by_color(Piece::Color color, std::vector<Node*> &nodes);
-	std::vector<std::list<Node*> > possible_jumps(Piece* piece);
+	TreeNode* possible_jumps(Piece* piece);
+    void print_possible_jumps(TreeNode* start);
+    void print_possible_jumps(Piece* piece);
 
 //private:
 	TreeNode* build_filled_tree_node(Node* pos);
 	TreeNode* build_empty_tree_node(Node* pos);
-	void discover_jumps(TreeNode *tree_node, int direction);
+	void discover_jumps(TreeNode *tree_node, Direction direction);
 
 	static Game *m_instance;
 	Board *board;
