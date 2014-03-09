@@ -1,14 +1,18 @@
 #ifndef __checkers__MoveMemento__
 #define __checkers__MoveMemento__
 #include <stack>
-#include <utility>
+#include <tuple>
 class Board;
 class Point;
 
+// Class somewhat similar to a memento
+// It keeps track of moves and is then able to
+// rollback the changes.
+// This memento can ONLY be used, if the board has only been modified by it between moves and rollbacks
 class MoveMemento
 {
 public:
-    typedef std::pair<Point, Point> MoveType;
+    typedef std::tuple<Piece*, Node*, Node*> MoveType;
     
     MoveMemento(Board& _board);
     

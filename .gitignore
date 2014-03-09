@@ -17,3 +17,6 @@ exam
 
 # LLDB files
 exam.dSYM
+
+# Spotlight
+.DS_Store

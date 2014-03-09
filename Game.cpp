@@ -2,6 +2,7 @@
 #include <list>
 #include <set>
 #include <iostream>
+#include <memory>
 
 #include "Game.h"
 // #include "Piece.h"
@@ -10,6 +11,8 @@ using std::cout;
 using std::endl;
 using std::vector;
 using std::list;
+using std::shared_ptr;
+using std::make_shared;
 
 void Game::create_pieces()
 {
@@ -89,16 +92,32 @@ void Game::possible_moves_by_color(Piece::Color color, std::vector<Node*> &nodes
 	}
 }
 
-TreeNode* Game::possible_jumps(Piece* piece)
+Game::TreeNodePtr Game::build_filled_tree_node(Node* pos)
+{
+	auto tree_node = make_shared<TreeNode>();
+	tree_node->pos = pos;
+	tree_node->space = 1; // filled
+	return tree_node;
+}
+
+Game::TreeNodePtr Game::build_empty_tree_node(Node* pos)
+{
+	auto tree_node = make_shared<TreeNode>();
+	tree_node->pos = pos;
+	tree_node->space = 0;
+	return tree_node;
+}
+
+Game::TreeNodePtr Game::possible_jumps(Piece* piece)
 {
 	// Build possible jumps
-	TreeNode* start = build_empty_tree_node(piece->location);
+	auto start = build_empty_tree_node(piece->location);
 	discover_jumps(start, piece->get_direction());
 
 	return start;
 }
 
-void Game::print_possible_jumps(TreeNode* start)
+void Game::print_possible_jumps(TreeNodePtr start)
 {
     if (start != nullptr)
     {
@@ -107,12 +126,14 @@ void Game::print_possible_jumps(TreeNode* start)
     
     if (start->left != nullptr)
     {
-        cout << "(left)" << "(" << start->left->pos->pos.x << "," << start->left->pos->pos.y << ") ";
+        cout << "(left)" << "(" << start->left->pos->pos.x << "," << start->left->pos->pos.y << ")";
+        print_possible_jumps(start->left);
     }
     
     if (start->right != nullptr)
     {
         cout << "(right)" << "(" << start->right->pos->pos.x << "," << start->right->pos->pos.y << ")";
+        print_possible_jumps(start->right);
     }
     
     cout << endl;
@@ -123,27 +144,11 @@ void Game::print_possible_jumps(Piece* piece)
     print_possible_jumps(possible_jumps(piece));
 }
 
-TreeNode* Game::build_filled_tree_node(Node* pos)
-{
-	TreeNode *tree_node = new TreeNode;
-	tree_node->pos = pos;
-	tree_node->space = 1; // filled
-	return tree_node;
-}
-
-TreeNode* Game::build_empty_tree_node(Node* pos)
-{
-	TreeNode* tree_node = new TreeNode;
-	tree_node->pos = pos;
-	tree_node->space = 0;
-	return tree_node;
-}
-
-void Game::discover_jumps(TreeNode *tree_node, Direction direction)
+void Game::discover_jumps(TreeNodePtr tree_node, Direction direction)
 {
 	if (tree_node == nullptr)
 		return;
-
+    
 	int left, right;
 	if (direction == Direction::DOWN) {
 		left = Node::BOTTOM_LEFT;
@@ -153,39 +158,31 @@ void Game::discover_jumps(TreeNode *tree_node, Direction direction)
 		right = Node::TOP_RIGHT;
 	}
 
-	TreeNode *left_tree_node = nullptr;
-	TreeNode *right_tree_node = nullptr;
+	TreeNodePtr left_tree_node = nullptr;
+	TreeNodePtr right_tree_node = nullptr;
 	if (tree_node->pos->adjacents[left] != nullptr && tree_node->pos->adjacents[left]->piece != nullptr) {
 		left_tree_node = build_filled_tree_node(tree_node->pos->adjacents[left]);
-		// We have a piece, check for emptiness left and right
+		// We have a piece, check for emptiness left
 		if (left_tree_node->pos->adjacents[left] != nullptr && left_tree_node->pos->adjacents[left]->piece == nullptr) {
 			left_tree_node->left = build_empty_tree_node(left_tree_node->pos->adjacents[left]);
 			discover_jumps(left_tree_node->left, direction);
 		}
-		if (left_tree_node->pos->adjacents[right] != nullptr && left_tree_node->pos->adjacents[right]->piece == nullptr) {
-			left_tree_node->right = build_empty_tree_node(left_tree_node->pos->adjacents[right]);
-			discover_jumps(left_tree_node->right, direction);
-		}
 
 		// Only attach if there is a kill to make
-		if (left_tree_node->left != nullptr || left_tree_node->right != nullptr)
-			tree_node->right = left_tree_node;
+		if (left_tree_node->left != nullptr)
+			tree_node->left = left_tree_node;
 	}
 
 	if (tree_node->pos->adjacents[right] != nullptr && tree_node->pos->adjacents[right]->piece != nullptr) {
 		right_tree_node = build_filled_tree_node(tree_node->pos->adjacents[left]);
-		// We have a piece, check for emptiness left and right
-		if (right_tree_node->pos->adjacents[left] != nullptr && right_tree_node->pos->adjacents[left]->piece == nullptr) {
-			right_tree_node->left = build_empty_tree_node(right_tree_node->pos->adjacents[left]);
-			discover_jumps(right_tree_node->left, direction);
-		}
+		// We have a piece, check for emptiness right
 		if (right_tree_node->pos->adjacents[right] != nullptr && right_tree_node->pos->adjacents[right]->piece == nullptr) {
 			right_tree_node->right = build_empty_tree_node(right_tree_node->pos->adjacents[right]);
 			discover_jumps(right_tree_node->right, direction);
 		}
 
 		// Only attach if there is a kill to make
-		if (right_tree_node->left != nullptr || right_tree_node->right != nullptr)
+		if (right_tree_node->right != nullptr)
 			tree_node->right = right_tree_node;
 	}
 }

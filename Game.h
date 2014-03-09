@@ -4,6 +4,7 @@
 #include <vector>
 #include <list>
 #include <cstdint>
+#include <memory>
 
 #include "Board.h"
 #include "Piece.h"
@@ -14,14 +15,16 @@ enum class Direction : std::uint8_t;
 struct TreeNode
 {
     Node *pos;
-    TreeNode* left;
-    TreeNode* right;
+    Node *kill;
+    std::shared_ptr<TreeNode> left;
+    std::shared_ptr<TreeNode> right;
     int space; // filled = 1, empty = 0;
 };
 
 class Game
 {
 public:
+    typedef std::shared_ptr<TreeNode> TreeNodePtr;
     static Game &instance()
     {
         if (m_instance == nullptr)
@@ -40,14 +43,14 @@ public:
 
 	void possible_moves(Piece* piece, std::vector<Node*> &nodes);
 	void possible_moves_by_color(Piece::Color color, std::vector<Node*> &nodes);
-	TreeNode* possible_jumps(Piece* piece);
-    void print_possible_jumps(TreeNode* start);
+    TreeNodePtr possible_jumps(Piece* piece);
+    void print_possible_jumps(TreeNodePtr start);
     void print_possible_jumps(Piece* piece);
 
 //private:
-	TreeNode* build_filled_tree_node(Node* pos);
-	TreeNode* build_empty_tree_node(Node* pos);
-	void discover_jumps(TreeNode *tree_node, Direction direction);
+    TreeNodePtr build_filled_tree_node(Node* pos);
+    TreeNodePtr build_empty_tree_node(Node* pos);
+	void discover_jumps(TreeNodePtr tree_node, Direction direction);
 
 	static Game *m_instance;
 	Board *board;

@@ -74,6 +74,13 @@ Node* Board::get_node(const Point& pos)
 		return nullptr;
 }
 
+void Board::move_piece(Piece* piece, Node* from, Node* to)
+{
+    from->piece = nullptr;
+    to->piece = piece;
+    piece->location = to;
+}
+
 bool Board::move_piece(const Point& from, const Point& to)
 {
     Node* from_node = get_node(from);
@@ -88,9 +95,7 @@ bool Board::move_piece(const Point& from, const Point& to)
     if (piece == nullptr)
         return false;
 
-    from_node->piece = nullptr;
-    to_node->piece = piece;
-    piece->location = to_node;
+    move_piece(piece, from_node, to_node);
 
     return true;
 }
