@@ -10,7 +10,6 @@
 #include "Piece.h"
 
 #define PIECES_COUNT 12
-enum class Direction : std::uint8_t;
 
 struct TreeNode
 {
@@ -50,7 +49,7 @@ public:
 //private:
     TreeNodePtr build_filled_tree_node(Node* pos);
     TreeNodePtr build_empty_tree_node(Node* pos);
-	void discover_jumps(TreeNodePtr tree_node, Direction direction);
+	void discover_jumps(TreeNodePtr tree_node, uint8_t direction);
 
 	static Game *m_instance;
 	Board *board;

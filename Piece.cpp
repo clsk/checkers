@@ -2,10 +2,10 @@
 
 #include "Board.h"
 
-Direction Piece::get_direction()
+std::uint8_t Piece::get_direction()
 {
     if (color == Red)
-        return Direction::DOWN;
+        return DIRECTION_DOWN;
     else
-        return Direction::UP;
+        return DIRECTION_UP;
 }

@@ -144,13 +144,13 @@ void Game::print_possible_jumps(Piece* piece)
     print_possible_jumps(possible_jumps(piece));
 }
 
-void Game::discover_jumps(TreeNodePtr tree_node, Direction direction)
+void Game::discover_jumps(TreeNodePtr tree_node, uint8_t direction)
 {
 	if (tree_node == nullptr)
 		return;
     
 	int left, right;
-	if (direction == Direction::DOWN) {
+	if (direction == DIRECTION_DOWN) {
 		left = Node::BOTTOM_LEFT;
 		right = Node::BOTTOM_RIGHT;
 	} else {

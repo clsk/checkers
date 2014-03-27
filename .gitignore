@@ -20,3 +20,6 @@ exam.dSYM
 
 # Spotlight
 .DS_Store
+
+UI/Debug/*
+UI/UI/Debug/*

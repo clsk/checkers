@@ -2,7 +2,6 @@
 #define _PIECE
 #include <cstdint>
 struct Node; // Forward Declaration
-enum class Direction : std::uint8_t;
 
 struct Piece
 {
@@ -12,7 +11,7 @@ struct Piece
 		Black
 	};
     
-    Direction get_direction();
+    std::uint8_t get_direction();
 
 	Color color;
 	bool is_king;

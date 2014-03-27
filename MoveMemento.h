@@ -3,7 +3,7 @@
 #include <stack>
 #include <tuple>
 class Board;
-class Point;
+struct Point;
 
 // Class somewhat similar to a memento
 // It keeps track of moves and is then able to

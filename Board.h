@@ -4,6 +4,8 @@
 #define BOARD_LIMIT 64
 #include <map>
 #include <cstdint>
+#define DIRECTION_UP 0
+#define DIRECTION_DOWN 1
 
 struct Piece;
 class MoveMemento;
@@ -39,12 +41,6 @@ struct Node
 	Piece *piece; // null if no piece present
 	static const int BOTTOM_LEFT = 0, BOTTOM_RIGHT = 1, TOP_LEFT = 2, TOP_RIGHT = 3;
 	Node *adjacents[4];
-};
-
-enum class Direction : std::uint8_t
-{
-    UP,
-    DOWN
 };
 
 class Board
