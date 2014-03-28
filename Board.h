@@ -52,6 +52,8 @@ public:
 	Piece* get_piece(const Point& point);
     void move_piece(Piece* piece, Node* from, Node* to);
     bool move_piece(const Point& from, const Point& to);	
+	void remove_piece(const Point& location);
+	void remove_piece(Piece* piece);
     void print();
     MoveMemento get_memento();
 

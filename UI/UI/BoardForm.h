@@ -91,6 +91,7 @@ namespace UI {
 	private:
 		PictureBox^ pbSelected = nullptr;
 		std::pair<Node*, Node*>*possibleMoves = nullptr;
+		Game::TreeNodePtr* possibleJumps = nullptr;
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -163,22 +164,23 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 				 pbSelected = pb;
 				 Piece *piece = Game::instance().get_board().get_piece(::Point(point.X, point.Y));
 				 Game::TreeNodePtr treeNode = Game::instance().possible_jumps(piece, 1);
-				 if (treeNode->left == nullptr && treeNode->right == nullptr)
-					 possibleMoves = new std::pair<Node*, Node*>(Game::instance().possible_moves(piece));
+				 // If there are jumps to make, dont worry about possible moves
+				 if (treeNode->left != nullptr || treeNode->right != nullptr)
+					 possibleJumps = new Game::TreeNodePtr(treeNode);
 				 else
-				 {
-					 if (treeNode->left != nullptr)
-						 MessageBox::Show("1. possible jump (" + treeNode->left->pos->pos.x + "," + treeNode->left->pos->pos.y + ")");
-					 if (treeNode->right != nullptr)
-						 MessageBox::Show("2. possible jump (" + treeNode->right->pos->pos.x + "," + treeNode->right->pos->pos.y + ")");
-				 }
+					 possibleMoves = new std::pair<Node*, Node*>(Game::instance().possible_moves(piece));
 			 }
 			 else if (pb == pbSelected)
 			 {
 				 // Unselect
 				 pb->BackColor = Color::Transparent;
 				 pbSelected = nullptr;
-				 if (possibleMoves != nullptr)
+				 if (possibleJumps != nullptr)
+				 {
+					 delete possibleJumps;
+					 possibleJumps = nullptr;
+				 }
+				 else
 				 {
 					 delete possibleMoves;
 					 possibleMoves = nullptr;
@@ -188,7 +190,6 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 			 {
 
 			 }
-
 }
 private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 			 // Get Board position based on click position
@@ -208,7 +209,46 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 			 else
 				 return;
 
-			 if (possibleMoves != nullptr)
+			 // User should be attempting a kill because there are jumps to make
+			 if (possibleJumps != nullptr)
+			 {
+				 Game::TreeNodePtr newPos = nullptr;
+				 if (possibleJumps->get()->left != nullptr && possibleJumps->get()->left->pos->pos.x == x && possibleJumps->get()->left->pos->pos.y == y)
+				 {
+					 newPos = possibleJumps->get()->left;
+				 }
+				 else if (possibleJumps->get()->right != nullptr && possibleJumps->get()->right->pos->pos.x == x && possibleJumps->get()->right->pos->pos.y == y)
+				 {
+					 newPos = possibleJumps->get()->right;
+				 }
+
+				 if (newPos != nullptr)
+				 {
+					 // delete killed piece
+					 Game::instance().get_board().remove_piece(newPos->killed->piece);
+					 tplBoard->Controls->Remove(tplBoard->GetControlFromPosition(newPos->killed->pos.x + 1, newPos->killed->pos.y + 1));
+
+					 // Move to new place
+					 System::Drawing::Point from = (System::Drawing::Point)pbSelected->Tag;
+					 movePiece(from, System::Drawing::Point(x, y));
+					 // delete possibleJumps
+					 delete possibleJumps;
+					 possibleJumps = nullptr;
+					 // if there are more jumps to make, select piece again
+					 Game::TreeNodePtr treeNode = Game::instance().possible_jumps(Game::instance().get_board().get_piece(::Point(x,y)), 1);
+					 if (treeNode->left != nullptr || treeNode->right != nullptr)
+					 {
+						 // select piece again
+						 pbSelected->BackColor = Color::Aqua;
+						 possibleJumps = new Game::TreeNodePtr(treeNode);
+					 }
+					 else
+					 {
+						 pbSelected = nullptr;
+					 }
+				 }
+			 }
+			 else if (possibleMoves != nullptr)
 			 {
 				 if ((possibleMoves->first != nullptr && possibleMoves->first->pos.x == x && possibleMoves->first->pos.y == y) ||
 					 (possibleMoves->second != nullptr && possibleMoves->second->pos.x == x && possibleMoves->second->pos.y == y) )
@@ -220,7 +260,6 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 					 possibleMoves = nullptr;
 				 }
 			 }
-			 //MessageBox::Show("(" + x + "," + y + ")");
 }
 };
 }

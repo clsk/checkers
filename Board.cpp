@@ -124,6 +124,19 @@ bool Board::move_piece(const Point& from, const Point& to)
 
     return true;
 }
+void Board::remove_piece(const Point& location)
+{
+	remove_piece(get_piece(location));
+}
+void Board::remove_piece(Piece* piece)
+{
+	if (piece != nullptr)
+	{
+		piece->location->piece = nullptr;
+		piece->location = nullptr;
+		delete piece;
+	}
+}
 
 void Board::print()
 {

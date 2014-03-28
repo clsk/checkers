@@ -93,6 +93,7 @@ Game::TreeNodePtr Game::build_tree_node(Node* pos, Node* killed)
 {
 	auto tree_node = make_shared<TreeNode>();
 	tree_node->pos = pos;
+	tree_node->killed = killed;
 	return tree_node;
 }
 
