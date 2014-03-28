@@ -17,7 +17,7 @@ void Board::link_adjacent_nodes(Node* node)
 
 	// BOTTOM_LEFT
 	Point pos = node->pos;
-	if ((pos.x) > 0 && (pos.y) > 1) {
+	if ((pos.x) > 0 && (pos.y) > 0) {
 		node->adjacents[Node::BOTTOM_LEFT] = get_node(Point(pos.x-1, pos.y-1));
 
 		//printf("Linking (%u,%u) with (%u,%u)\n", pos.x, pos.y, pos.x-1, pos.y-1);
@@ -28,7 +28,7 @@ void Board::link_adjacent_nodes(Node* node)
 	}
 
 	// BOTTOM_RIGHT
-	if ((pos.x+1) < 8 && (pos.y) > 1) {
+	if ((pos.x+1) < 8 && (pos.y) > 0) {
 		node->adjacents[Node::BOTTOM_RIGHT] = get_node(Point(pos.x+1, pos.y-1));
 
 		//printf("Linking (%u,%u) with (%u,%u)\n", pos.x, pos.y, pos.x+1, pos.y-1);
