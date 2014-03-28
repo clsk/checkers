@@ -17,10 +17,14 @@ void Board::link_adjacent_nodes(Node* node)
 
 	// BOTTOM_LEFT
 	Point pos = node->pos;
-	if ((pos.x) > 1 && (pos.y) > 1) {
+	if ((pos.x) > 0 && (pos.y) > 1) {
 		node->adjacents[Node::BOTTOM_LEFT] = get_node(Point(pos.x-1, pos.y-1));
 
 		//printf("Linking (%u,%u) with (%u,%u)\n", pos.x, pos.y, pos.x-1, pos.y-1);
+	}
+	else
+	{
+		node->adjacents[Node::BOTTOM_LEFT] = nullptr;
 	}
 
 	// BOTTOM_RIGHT
@@ -29,18 +33,30 @@ void Board::link_adjacent_nodes(Node* node)
 
 		//printf("Linking (%u,%u) with (%u,%u)\n", pos.x, pos.y, pos.x+1, pos.y-1);
 	}
+	else
+	{
+		node->adjacents[Node::BOTTOM_RIGHT] = nullptr;
+	}
 
 	// TOP_LEFT
-	if ((pos.x) > 1 && (pos.y+1) < 8) {
+	if ((pos.x) > 0 && (pos.y+1) < 8) {
 		node->adjacents[Node::TOP_LEFT] = get_node(Point(pos.x-1, pos.y+1));
 
 		//printf("Linking (%u,%u) with (%u,%u)\n", pos.x, pos.y, pos.x-1, pos.y+1);
+	}
+	else
+	{
+		node->adjacents[Node::TOP_LEFT] = nullptr;
 	}
 
 	// TOP_RIGHT
 	if ((pos.x+1) < 8 && (pos.y+1) < 8) {
 		node->adjacents[Node::TOP_RIGHT] = get_node(Point(pos.x+1, pos.y+1));
 		//printf("Linking (%u,%u) with (%u,%u)\n", pos.x, pos.y, pos.x+1, pos.y+1);
+	}
+	else
+	{
+		node->adjacents[Node::TOP_RIGHT] = nullptr;
 	}
 }
 

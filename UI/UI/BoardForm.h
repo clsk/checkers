@@ -165,10 +165,8 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 				 {
 					 if (treeNode->left != nullptr)
 						 MessageBox::Show("1. possible jump (" + treeNode->left->pos->pos.x + "," + treeNode->left->pos->pos.y + ")");
-					 else if (treeNode->right != nullptr)
-					 {
-						 MessageBox::Show("1. possible jump (" + treeNode->right->pos->pos.x + "," + treeNode->right->pos->pos.y + ")");
-					 }
+					 if (treeNode->right != nullptr)
+						 MessageBox::Show("2. possible jump (" + treeNode->right->pos->pos.x + "," + treeNode->right->pos->pos.y + ")");
 				 }
 			 }
 			 else if (pb == pbSelected)
