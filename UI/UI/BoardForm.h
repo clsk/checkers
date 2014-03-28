@@ -1,6 +1,7 @@
 #pragma once
 #include "../../Game.h"
 #include <iostream>
+
 using std::cout;
 using std::endl;
 namespace UI {
@@ -17,21 +18,14 @@ namespace UI {
 	/// </summary>
 	public ref class BoardForm : public System::Windows::Forms::Form
 	{
-		
 	public:
 		BoardForm(void)
 		{
 			InitializeComponent();
-			//
-			//TODO: Add the constructor code here
-			//
 			Game::instance().create_board();
-
 			Game::instance().create_pieces();
+
 			loadPieces();
-			Board& board = Game::instance().get_board();
-			board.print();
-			cout << endl;
 		}
 
 		void loadPieces()
@@ -65,6 +59,15 @@ namespace UI {
 				pb->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &BoardForm::piece_MouseClick);
 			}
 
+		}
+
+		void movePiece(System::Drawing::Point from, System::Drawing::Point to)
+		{
+			 Game::instance().get_board().move_piece(::Point(from.X, from.Y), ::Point(to.X, to.Y));
+			 pbSelected->Tag = to;
+			 pbSelected->BackColor = Color::Transparent;
+			 tplBoard->Controls->Remove(pbSelected);
+			 tplBoard->Controls->Add(pbSelected, to.X + 1, to.Y + 1);
 		}
 
 	protected:
@@ -194,13 +197,8 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 				 if ((possibleMoves->first != nullptr && possibleMoves->first->pos.x == x && possibleMoves->first->pos.y == y) ||
 					 (possibleMoves->second != nullptr && possibleMoves->second->pos.x == x && possibleMoves->second->pos.y == y) )
 				 {
-
 					 System::Drawing::Point from = (System::Drawing::Point)pbSelected->Tag;
-					 Game::instance().get_board().move_piece(::Point(from.X, from.Y), ::Point(x, y));
-					 pbSelected->Tag = System::Drawing::Point(x, y);
-					 pbSelected->BackColor = Color::Transparent;
-					 tplBoard->Controls->Remove(pbSelected);
-					 tplBoard->Controls->Add(pbSelected, x + 1, y + 1);
+					 movePiece(from, System::Drawing::Point(x, y));
 					 pbSelected = nullptr;
 					 delete possibleMoves;
 					 possibleMoves = nullptr;

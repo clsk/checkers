@@ -15,10 +15,9 @@
 struct TreeNode
 {
     Node *pos;
-    Node *kill;
+    Node *killed;
     std::shared_ptr<TreeNode> left;
     std::shared_ptr<TreeNode> right;
-    int space; // filled = 1, empty = 0;
 };
 
 class Game
@@ -42,14 +41,13 @@ public:
 	void create_pieces();
 
 	std::pair<Node*, Node*> possible_moves(Piece* piece);
-    TreeNodePtr possible_jumps(Piece* piece);
+    TreeNodePtr possible_jumps(Piece* piece, uint8_t depth = -1);
     void print_possible_jumps(TreeNodePtr start);
     void print_possible_jumps(Piece* piece);
 
 //private:
-    TreeNodePtr build_filled_tree_node(Node* pos);
-    TreeNodePtr build_empty_tree_node(Node* pos);
-	void discover_jumps(TreeNodePtr tree_node, uint8_t direction);
+    TreeNodePtr build_tree_node(Node* pos, Node* killed = nullptr);
+	void discover_jumps(TreeNodePtr tree_node, uint8_t direction, uint8_t depth = -1);
 
 	static Game *m_instance;
 	Board *board;

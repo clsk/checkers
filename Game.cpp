@@ -90,27 +90,18 @@ std::pair<Node*,Node*> Game::possible_moves(Piece* piece)
 	return p;
 }
 
-Game::TreeNodePtr Game::build_filled_tree_node(Node* pos)
+Game::TreeNodePtr Game::build_tree_node(Node* pos, Node* killed)
 {
 	auto tree_node = make_shared<TreeNode>();
 	tree_node->pos = pos;
-	tree_node->space = 1; // filled
 	return tree_node;
 }
 
-Game::TreeNodePtr Game::build_empty_tree_node(Node* pos)
-{
-	auto tree_node = make_shared<TreeNode>();
-	tree_node->pos = pos;
-	tree_node->space = 0;
-	return tree_node;
-}
-
-Game::TreeNodePtr Game::possible_jumps(Piece* piece)
+Game::TreeNodePtr Game::possible_jumps(Piece* piece, uint8_t depth)
 {
 	// Build possible jumps
-	auto start = build_empty_tree_node(piece->location);
-	discover_jumps(start, piece->get_direction());
+	auto start = build_tree_node(piece->location);
+	discover_jumps(start, piece->get_direction(), depth);
 
 	return start;
 }
@@ -142,9 +133,9 @@ void Game::print_possible_jumps(Piece* piece)
     print_possible_jumps(possible_jumps(piece));
 }
 
-void Game::discover_jumps(TreeNodePtr tree_node, uint8_t direction)
+void Game::discover_jumps(TreeNodePtr tree_node, uint8_t direction, uint8_t depth)
 {
-	if (tree_node == nullptr)
+	if (depth == 0 || tree_node == nullptr)
 		return;
     
 	int left, right;
@@ -156,32 +147,25 @@ void Game::discover_jumps(TreeNodePtr tree_node, uint8_t direction)
 		right = Node::TOP_RIGHT;
 	}
 
-	TreeNodePtr left_tree_node = nullptr;
-	TreeNodePtr right_tree_node = nullptr;
-	if (tree_node->pos->adjacents[left] != nullptr && tree_node->pos->adjacents[left]->piece != nullptr) {
-		left_tree_node = build_filled_tree_node(tree_node->pos->adjacents[left]);
+	Node* left_tree_node = nullptr;
+	Node* right_tree_node = nullptr;
+	--depth; // Decrease depth here, for recursive call
+	left_tree_node = tree_node->pos->adjacents[left];
+	if (left_tree_node != nullptr && left_tree_node->piece != nullptr) {
 		// We have a piece, check for emptiness left
-		if (left_tree_node->pos->adjacents[left] != nullptr && left_tree_node->pos->adjacents[left]->piece == nullptr) {
-			left_tree_node->left = build_empty_tree_node(left_tree_node->pos->adjacents[left]);
-			discover_jumps(left_tree_node->left, direction);
+		if (left_tree_node->adjacents[left] != nullptr && left_tree_node->adjacents[left]->piece == nullptr) {
+			tree_node->left = build_tree_node(left_tree_node->adjacents[left], left_tree_node);
+			discover_jumps(tree_node->left, direction, depth);
 		}
-
-		// Only attach if there is a kill to make
-		if (left_tree_node->left != nullptr)
-			tree_node->left = left_tree_node;
 	}
 
-	if (tree_node->pos->adjacents[right] != nullptr && tree_node->pos->adjacents[right]->piece != nullptr) {
-		right_tree_node = build_filled_tree_node(tree_node->pos->adjacents[left]);
+	right_tree_node = tree_node->pos->adjacents[right];
+	if (right_tree_node != nullptr && right_tree_node->piece != nullptr) {
 		// We have a piece, check for emptiness right
-		if (right_tree_node->pos->adjacents[right] != nullptr && right_tree_node->pos->adjacents[right]->piece == nullptr) {
-			right_tree_node->right = build_empty_tree_node(right_tree_node->pos->adjacents[right]);
-			discover_jumps(right_tree_node->right, direction);
+		if (right_tree_node->adjacents[right] != nullptr && right_tree_node->adjacents[right]->piece == nullptr) {
+			tree_node->right = build_tree_node(right_tree_node->adjacents[right], right_tree_node);
+			discover_jumps(tree_node->right, direction, depth);
 		}
-
-		// Only attach if there is a kill to make
-		if (right_tree_node->right != nullptr)
-			tree_node->right = right_tree_node;
 	}
 }
 
