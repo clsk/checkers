@@ -21,5 +21,7 @@ exam.dSYM
 # Spotlight
 .DS_Store
 
+# Visual Studio bin and temporaries
 UI/Debug/*
 UI/UI/Debug/*
+*.opensdf

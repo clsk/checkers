@@ -37,31 +37,34 @@ namespace UI {
 		void loadPieces()
 		{
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(BoardForm::typeid));
-			Board& board = Game::instance().get_board();
-			for (int y = 0; y < 8; y++) {
-				for (int x = 0; x < 8; x += 2) {
-					int xi = x;
-					if (y % 2 > 0)
-						xi = x+1;
-					Piece* piece = board.get_node(::Point(xi,y))->piece;
-					if (piece != nullptr)
-					{
-						if (piece->color == Piece::Red) {
-							PictureBox^ pb = gcnew PictureBox();
-							pb->BackColor = System::Drawing::Color::Transparent;
-							pb->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"pbRedPiece.Image")));
-							//pb->Location = System::Drawing::Point((x*58)+13, (y*58)+13);
-							pb->Name = L"pbRedPiece"+x.ToString() + "_" + y.ToString();
-							pb->Size = System::Drawing::Size(52, 52);
-							pb->SizeMode = System::Windows::Forms::PictureBoxSizeMode::StretchImage;
-							pb->Visible = true;
-							this->tplBoard->Controls->Add(pb, xi + 1, y + 1);
-						}
-						else if (piece->color == Piece::Black) {
-						}
-					}
-				}
+			Piece **redPieces = Game::instance().red_pieces;
+			Piece **blackPieces = Game::instance().black_pieces;
+
+			for (int i = 0; i < PIECES_COUNT; i++)
+			{
+				// red piece
+				PictureBox^ pb = gcnew PictureBox();
+				pb->BackColor = System::Drawing::Color::Transparent;
+				pb->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"red")));
+				pb->Size = System::Drawing::Size(52, 52);
+				pb->SizeMode = System::Windows::Forms::PictureBoxSizeMode::StretchImage;
+				pb->Visible = true;
+				pb->Tag = System::Drawing::Point(redPieces[i]->location->pos.x, redPieces[i]->location->pos.y);
+				this->tplBoard->Controls->Add(pb, redPieces[i]->location->pos.x + 1, redPieces[i]->location->pos.y + 1);			
+				pb->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &BoardForm::piece_MouseClick);
+
+				// black piece
+				pb = gcnew PictureBox();
+				pb->BackColor = System::Drawing::Color::Transparent;
+				pb->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"black")));
+				pb->Size = System::Drawing::Size(52, 52);
+				pb->SizeMode = System::Windows::Forms::PictureBoxSizeMode::StretchImage;
+				pb->Visible = true;
+				pb->Tag = System::Drawing::Point(blackPieces[i]->location->pos.x, blackPieces[i]->location->pos.y);
+				this->tplBoard->Controls->Add(pb, blackPieces[i]->location->pos.x + 1, blackPieces[i]->location->pos.y + 1);			
+				pb->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &BoardForm::piece_MouseClick);
 			}
+
 		}
 
 	protected:
@@ -76,10 +79,12 @@ namespace UI {
 			}
 		}
 	private: System::Windows::Forms::TableLayoutPanel^  tplBoard;
-	private: System::Windows::Forms::PictureBox^  pbRedPiece;
+
 
 
 	private:
+		PictureBox^ pbSelected = nullptr;
+		std::pair<Node*, Node*>*possibleMoves = nullptr;
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -94,9 +99,6 @@ namespace UI {
 		{
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(BoardForm::typeid));
 			this->tplBoard = (gcnew System::Windows::Forms::TableLayoutPanel());
-			this->pbRedPiece = (gcnew System::Windows::Forms::PictureBox());
-			this->tplBoard->SuspendLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbRedPiece))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// tplBoard
@@ -113,7 +115,6 @@ namespace UI {
 			this->tplBoard->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Absolute, 58)));
 			this->tplBoard->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Absolute, 58)));
 			this->tplBoard->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Absolute, 13)));
-			this->tplBoard->Controls->Add(this->pbRedPiece, 5, 5);
 			this->tplBoard->Location = System::Drawing::Point(109, 31);
 			this->tplBoard->Name = L"tplBoard";
 			this->tplBoard->RowCount = 10;
@@ -131,17 +132,6 @@ namespace UI {
 			this->tplBoard->TabIndex = 0;
 			this->tplBoard->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &BoardForm::tplBoard_MouseClick);
 			// 
-			// pbRedPiece
-			// 
-			this->pbRedPiece->BackColor = System::Drawing::Color::Transparent;
-			this->pbRedPiece->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"pbRedPiece.Image")));
-			this->pbRedPiece->Location = System::Drawing::Point(248, 250);
-			this->pbRedPiece->Name = L"pbRedPiece";
-			this->pbRedPiece->Size = System::Drawing::Size(52, 52);
-			this->pbRedPiece->SizeMode = System::Windows::Forms::PictureBoxSizeMode::StretchImage;
-			this->pbRedPiece->TabIndex = 0;
-			this->pbRedPiece->TabStop = false;
-			// 
 			// BoardForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
@@ -150,34 +140,73 @@ namespace UI {
 			this->Controls->Add(this->tplBoard);
 			this->Name = L"BoardForm";
 			this->Text = L"BoardForm";
-			this->tplBoard->ResumeLayout(false);
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pbRedPiece))->EndInit();
 			this->ResumeLayout(false);
 
 		}
 #pragma endregion
 
 
+private: System::Void piece_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 PictureBox^ pb = (PictureBox^)sender;
+			 System::Drawing::Point point = (System::Drawing::Point)pb->Tag;
+			 // MessageBox::Show("(" + point.X + "," + point.Y + ")");
+			 if (pbSelected == nullptr)
+			 {
+				 pb->BackColor = Color::Aqua;
+				 pbSelected = pb;
+				 possibleMoves = new std::pair<Node*, Node*>(Game::instance().possible_moves(Game::instance().get_board().get_piece(::Point(point.X, point.Y))));
+				 //MessageBox::Show("1: (" + possibleMoves->first->pos.x + "," + possibleMoves->first->pos.y + ")");
+				 //MessageBox::Show("2: (" + possibleMoves->second->pos.x + "," + possibleMoves->second->pos.y + ")");
+
+			 }
+			 else if (pb == pbSelected)
+			 {
+				 pb->BackColor = Color::Transparent;
+				 pbSelected = nullptr;
+				 delete possibleMoves;
+				 possibleMoves = nullptr;
+			 }
+			 else 
+			 {
+
+			 }
+
+}
 private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 			 int x = -1;
 			 if (e->X > 13 && e->X < 477)
 			 {
 				 x = (e->X - 13) / 58;
 			 }
+			 else
+				 return;
 
 			 int y = -1;
 			 if (e->Y > 13 && e->Y < 477)
 			 {
-				 y = (e->Y-13) / 58;
+				 y = (e->Y - 13) / 58;
 			 }
+			 else
+				 return;
 
-			 MessageBox::Show("(" + x + "," + y + ")");
-
-			 if (x == 5 && y == 5)
+			 if (possibleMoves != nullptr)
 			 {
-				 this->tplBoard->Controls->Remove(pbRedPiece);
-				 this->tplBoard->Controls->Add(pbRedPiece, 5, 6);
+				 if ((possibleMoves->first != nullptr && possibleMoves->first->pos.x == x && possibleMoves->first->pos.y == y) ||
+					 (possibleMoves->second != nullptr && possibleMoves->second->pos.x == x && possibleMoves->second->pos.y == y) )
+				 {
+
+					 System::Drawing::Point from = (System::Drawing::Point)pbSelected->Tag;
+					 Game::instance().get_board().move_piece(::Point(from.X, from.Y), ::Point(x, y));
+					 pbSelected->Tag = System::Drawing::Point(x, y);
+					 pbSelected->BackColor = Color::Transparent;
+					 tplBoard->Controls->Remove(pbSelected);
+					 tplBoard->Controls->Add(pbSelected, x + 1, y + 1);
+					 pbSelected = nullptr;
+					 delete possibleMoves;
+					 possibleMoves = nullptr;
+				 }
 			 }
+			 //MessageBox::Show("(" + x + "," + y + ")");
 }
 };
 }

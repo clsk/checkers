@@ -64,7 +64,7 @@ void Game::create_pieces()
 }
 
 
-void Game::possible_moves(Piece* piece, vector<Node*> &nodes)
+std::pair<Node*,Node*> Game::possible_moves(Piece* piece)
 {
 	Node* node = piece->location;
 
@@ -77,19 +77,17 @@ void Game::possible_moves(Piece* piece, vector<Node*> &nodes)
 		right = Node::TOP_RIGHT;
 	}
 
+	std::pair<Node*, Node*> p;
+	p.first = p.second = nullptr;
 	// Left
 	if (node->adjacents[left]->piece == nullptr)
-		nodes.push_back(node->adjacents[left]);
+		p.first = node->adjacents[left];
+	
 	//Right
 	if (node->adjacents[right]->piece == nullptr)
-		nodes.push_back(node->adjacents[right]);
-}
+		p.second = node->adjacents[right];
 
-void Game::possible_moves_by_color(Piece::Color color, std::vector<Node*> &nodes)
-{
-	for (int i = 0; i < PIECES_COUNT; ++i) {
-		possible_moves(red_pieces[i], nodes);
-	}
+	return p;
 }
 
 Game::TreeNodePtr Game::build_filled_tree_node(Node* pos)

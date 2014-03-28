@@ -5,6 +5,7 @@
 #include <list>
 #include <cstdint>
 #include <memory>
+#include <utility>
 
 #include "Board.h"
 #include "Piece.h"
@@ -40,8 +41,7 @@ public:
 	Board& get_board() { return *board; }
 	void create_pieces();
 
-	void possible_moves(Piece* piece, std::vector<Node*> &nodes);
-	void possible_moves_by_color(Piece::Color color, std::vector<Node*> &nodes);
+	std::pair<Node*, Node*> possible_moves(Piece* piece);
     TreeNodePtr possible_jumps(Piece* piece);
     void print_possible_jumps(TreeNodePtr start);
     void print_possible_jumps(Piece* piece);
