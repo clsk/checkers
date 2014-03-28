@@ -23,7 +23,7 @@ struct TreeNode
 class Game
 {
 public:
-    typedef std::shared_ptr<TreeNode> TreeNodePtr;
+    typedef std::shared_ptr<::TreeNode> TreeNodePtr;
     static Game &instance()
     {
         if (m_instance == nullptr)

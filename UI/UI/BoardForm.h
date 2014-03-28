@@ -157,17 +157,29 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 			 {
 				 pb->BackColor = Color::Aqua;
 				 pbSelected = pb;
-				 possibleMoves = new std::pair<Node*, Node*>(Game::instance().possible_moves(Game::instance().get_board().get_piece(::Point(point.X, point.Y))));
-				 //MessageBox::Show("1: (" + possibleMoves->first->pos.x + "," + possibleMoves->first->pos.y + ")");
-				 //MessageBox::Show("2: (" + possibleMoves->second->pos.x + "," + possibleMoves->second->pos.y + ")");
-
+				 Piece *piece = Game::instance().get_board().get_piece(::Point(point.X, point.Y));
+				 Game::TreeNodePtr treeNode = Game::instance().possible_jumps(piece, 1);
+				 if (treeNode->left == nullptr && treeNode->right == nullptr)
+					 possibleMoves = new std::pair<Node*, Node*>(Game::instance().possible_moves(piece));
+				 else
+				 {
+					 if (treeNode->left != nullptr)
+						 MessageBox::Show("1. possible jump (" + treeNode->left->pos->pos.x + "," + treeNode->left->pos->pos.y + ")");
+					 else if (treeNode->right != nullptr)
+					 {
+						 MessageBox::Show("1. possible jump (" + treeNode->right->pos->pos.x + "," + treeNode->right->pos->pos.y + ")");
+					 }
+				 }
 			 }
 			 else if (pb == pbSelected)
 			 {
 				 pb->BackColor = Color::Transparent;
 				 pbSelected = nullptr;
-				 delete possibleMoves;
-				 possibleMoves = nullptr;
+				 if (possibleMoves != nullptr)
+				 {
+					 delete possibleMoves;
+					 possibleMoves = nullptr;
+				 }
 			 }
 			 else 
 			 {

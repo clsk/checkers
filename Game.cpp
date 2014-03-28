@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "Game.h"
-// #include "Piece.h"
 
 using std::cout;
 using std::endl;
@@ -80,11 +79,11 @@ std::pair<Node*,Node*> Game::possible_moves(Piece* piece)
 	std::pair<Node*, Node*> p;
 	p.first = p.second = nullptr;
 	// Left
-	if (node->adjacents[left]->piece == nullptr)
+	if (node->adjacents[left] != nullptr && node->adjacents[left]->piece == nullptr)
 		p.first = node->adjacents[left];
 	
 	//Right
-	if (node->adjacents[right]->piece == nullptr)
+	if (node->adjacents[right] != nullptr && node->adjacents[right]->piece == nullptr)
 		p.second = node->adjacents[right];
 
 	return p;
@@ -159,7 +158,7 @@ void Game::discover_jumps(TreeNodePtr tree_node, uint8_t direction, uint8_t dept
 		}
 	}
 
-	right_tree_node = tree_node->pos->adjacents[right];
+	right_tree_node = tree_node->pos->adjacents[right] != nullptr ? tree_node->pos->adjacents[right] : nullptr;
 	if (right_tree_node != nullptr && right_tree_node->piece != nullptr) {
 		// We have a piece, check for emptiness right
 		if (right_tree_node->adjacents[right] != nullptr && right_tree_node->adjacents[right]->piece == nullptr) {
