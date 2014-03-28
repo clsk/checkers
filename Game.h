@@ -47,7 +47,7 @@ public:
 
 //private:
     TreeNodePtr build_tree_node(Node* pos, Node* killed = nullptr);
-	void discover_jumps(TreeNodePtr tree_node, uint8_t direction, uint8_t depth = -1);
+	void discover_jumps(TreeNodePtr tree_node, Piece::Color color, uint8_t depth = -1);
 
 	static Game *m_instance;
 	Board *board;

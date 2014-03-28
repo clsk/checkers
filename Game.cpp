@@ -100,7 +100,7 @@ Game::TreeNodePtr Game::possible_jumps(Piece* piece, uint8_t depth)
 {
 	// Build possible jumps
 	auto start = build_tree_node(piece->location);
-	discover_jumps(start, piece->get_direction(), depth);
+	discover_jumps(start, piece->color, depth);
 
 	return start;
 }
@@ -132,13 +132,13 @@ void Game::print_possible_jumps(Piece* piece)
     print_possible_jumps(possible_jumps(piece));
 }
 
-void Game::discover_jumps(TreeNodePtr tree_node, uint8_t direction, uint8_t depth)
+void Game::discover_jumps(TreeNodePtr tree_node, Piece::Color color, uint8_t depth)
 {
 	if (depth == 0 || tree_node == nullptr)
 		return;
     
 	int left, right;
-	if (direction == DIRECTION_DOWN) {
+	if (color == Piece::Red) {
 		left = Node::BOTTOM_LEFT;
 		right = Node::BOTTOM_RIGHT;
 	} else {
@@ -150,20 +150,20 @@ void Game::discover_jumps(TreeNodePtr tree_node, uint8_t direction, uint8_t dept
 	Node* right_tree_node = nullptr;
 	--depth; // Decrease depth here, for recursive call
 	left_tree_node = tree_node->pos->adjacents[left];
-	if (left_tree_node != nullptr && left_tree_node->piece != nullptr) {
+	if (left_tree_node != nullptr && left_tree_node->piece != nullptr && left_tree_node->piece->color != color) {
 		// We have a piece, check for emptiness left
 		if (left_tree_node->adjacents[left] != nullptr && left_tree_node->adjacents[left]->piece == nullptr) {
 			tree_node->left = build_tree_node(left_tree_node->adjacents[left], left_tree_node);
-			discover_jumps(tree_node->left, direction, depth);
+			discover_jumps(tree_node->left, color, depth);
 		}
 	}
 
 	right_tree_node = tree_node->pos->adjacents[right] != nullptr ? tree_node->pos->adjacents[right] : nullptr;
-	if (right_tree_node != nullptr && right_tree_node->piece != nullptr) {
+	if (right_tree_node != nullptr && right_tree_node->piece != nullptr && right_tree_node->piece->color != color) {
 		// We have a piece, check for emptiness right
 		if (right_tree_node->adjacents[right] != nullptr && right_tree_node->adjacents[right]->piece == nullptr) {
 			tree_node->right = build_tree_node(right_tree_node->adjacents[right], right_tree_node);
-			discover_jumps(tree_node->right, direction, depth);
+			discover_jumps(tree_node->right, color, depth);
 		}
 	}
 }

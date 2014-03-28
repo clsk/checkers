@@ -2,6 +2,9 @@
 #include "../../Game.h"
 #include <iostream>
 
+#define BOARD_MARGIN 13
+#define SQUARE_DIM 58 // 58x58
+
 using std::cout;
 using std::endl;
 namespace UI {
@@ -155,6 +158,7 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 			 // MessageBox::Show("(" + point.X + "," + point.Y + ")");
 			 if (pbSelected == nullptr)
 			 {
+				 // New piece selected
 				 pb->BackColor = Color::Aqua;
 				 pbSelected = pb;
 				 Piece *piece = Game::instance().get_board().get_piece(::Point(point.X, point.Y));
@@ -171,6 +175,7 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 			 }
 			 else if (pb == pbSelected)
 			 {
+				 // Unselect
 				 pb->BackColor = Color::Transparent;
 				 pbSelected = nullptr;
 				 if (possibleMoves != nullptr)
@@ -186,18 +191,19 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 
 }
 private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 // Get Board position based on click position
 			 int x = -1;
-			 if (e->X > 13 && e->X < 477)
+			 if (e->X > BOARD_MARGIN && e->X < (SQUARE_DIM*8) + BOARD_MARGIN)
 			 {
-				 x = (e->X - 13) / 58;
+				 x = (e->X - BOARD_MARGIN) / SQUARE_DIM;
 			 }
 			 else
 				 return;
 
 			 int y = -1;
-			 if (e->Y > 13 && e->Y < 477)
+			 if (e->Y > BOARD_MARGIN && e->Y < (SQUARE_DIM*8) + BOARD_MARGIN)
 			 {
-				 y = (e->Y - 13) / 58;
+				 y = (e->Y - BOARD_MARGIN) / SQUARE_DIM;
 			 }
 			 else
 				 return;
