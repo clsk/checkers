@@ -64,6 +64,8 @@ public:
 	typedef map<Point, Node*, PointCompare> NodesType;
 	Node* get_node(const Point& point);
 	Piece* get_piece(const Point& point);
+	void crown_piece(Piece* piece);
+	void crown_piece(const Point& point); 
     void move_piece(Piece* piece, Node* from, Node* to);
     bool move_piece(const Point& from, const Point& to);	
 	void remove_piece(const Point& location);

@@ -70,6 +70,20 @@ namespace UI {
 			 tplBoard->Controls->Add(pbSelected, to.X + 1, to.Y + 1);
 		}
 
+		void crownIfNeeded(PictureBox^ pb, int x, int y)
+		{
+			 if (y == 7 || y == 0)
+			 {
+				 Piece *piece = Board::getInstance().get_piece(::Point(x, y));
+				 if (!piece->is_king)
+				 {
+					 Board::getInstance().crown_piece(piece);
+					 System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(BoardForm::typeid));
+					 pb->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(piece->color == Piece::Color::Red ? L"red_king" : L"black_king")));
+				 }
+			 }
+		}
+
 	protected:
 		~BoardForm()
 		{
@@ -228,6 +242,8 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 					 // delete possibleJumps
 					 delete possibleJumps;
 					 possibleJumps = nullptr;
+					 
+					 crownIfNeeded(pbSelected, x, y);
 					 // if there are more jumps to make, select piece again
 					 Board::TreeNodePtr treeNode = Board::getInstance().possible_jumps(Board::getInstance().get_piece(::Point(x,y)), 1);
 					 if (treeNode->left != nullptr || treeNode->right != nullptr)
@@ -249,6 +265,7 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 				 {
 					 System::Drawing::Point from = (System::Drawing::Point)pbSelected->Tag;
 					 movePiece(from, System::Drawing::Point(x, y));
+					 crownIfNeeded(pbSelected, x, y);
 					 pbSelected = nullptr;
 					 delete possibleMoves;
 					 possibleMoves = nullptr;

@@ -63,5 +63,11 @@
     <Image Include="black.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="red_king.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="black_king.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

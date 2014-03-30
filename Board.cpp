@@ -134,6 +134,17 @@ void Board::remove_piece(Piece* piece)
 	}
 }
 
+void Board::crown_piece(Piece* piece)
+{
+	if (piece != nullptr)
+		piece->is_king = true;
+}
+
+void Board::crown_piece(const Point& point)
+{
+	crown_piece(get_piece(point));
+}
+
 void Board::print()
 {
     cout << "   0   1   2   3   4   5   6   7" << endl;
