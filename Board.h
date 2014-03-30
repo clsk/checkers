@@ -62,6 +62,7 @@ class Board
 public:
     typedef std::shared_ptr<::TreeNode> TreeNodePtr;
 	typedef map<Point, Node*, PointCompare> NodesType;
+	typedef std::pair<Node*, Node*> NodePair;
 	Node* get_node(const Point& point);
 	Piece* get_piece(const Point& point);
 	void crown_piece(Piece* piece);
@@ -72,7 +73,8 @@ public:
 	void remove_piece(Piece* piece);
     void print();
     MoveMemento get_memento();
-	std::pair<Node*, Node*> possible_moves(Piece* piece);
+	NodePair possible_moves(Piece* piece, uint8_t direction);
+	std::pair<NodePair, NodePair> possible_moves(Piece* piece);
     TreeNodePtr possible_jumps(Piece* piece, uint8_t depth = -1);
     void print_possible_jumps(TreeNodePtr start);
     void print_possible_jumps(Piece* piece);

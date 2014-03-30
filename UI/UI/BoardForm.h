@@ -98,7 +98,7 @@ namespace UI {
 
 	private:
 		PictureBox^ pbSelected = nullptr;
-		std::pair<Node*, Node*>*possibleMoves = nullptr;
+		std::pair<Board::NodePair, Board::NodePair>*possibleMoves = nullptr;
 		Board::TreeNodePtr* possibleJumps = nullptr;
 		/// <summary>
 		/// Required designer variable.
@@ -176,7 +176,7 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 				 if (treeNode->left != nullptr || treeNode->right != nullptr)
 					 possibleJumps = new Board::TreeNodePtr(treeNode);
 				 else
-					 possibleMoves = new std::pair<Node*, Node*>(Board::getInstance().possible_moves(piece));
+					 possibleMoves = new std::pair<Board::NodePair, Board::NodePair>(Board::getInstance().possible_moves(piece));
 			 }
 			 else if (pb == pbSelected)
 			 {
@@ -260,8 +260,11 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 			 }
 			 else if (possibleMoves != nullptr)
 			 {
-				 if ((possibleMoves->first != nullptr && possibleMoves->first->pos.x == x && possibleMoves->first->pos.y == y) ||
-					 (possibleMoves->second != nullptr && possibleMoves->second->pos.x == x && possibleMoves->second->pos.y == y) )
+				 if ((possibleMoves->first.first != nullptr && possibleMoves->first.first->pos.x == x && possibleMoves->first.first->pos.y == y) ||
+					 (possibleMoves->first.second != nullptr && possibleMoves->first.second->pos.x == x && possibleMoves->first.second->pos.y == y) ||
+					 (possibleMoves->second.first != nullptr && possibleMoves->second.first->pos.x == x && possibleMoves->second.first->pos.y == y) ||
+					 (possibleMoves->second.second != nullptr && possibleMoves->second.second->pos.x == x && possibleMoves->second.second->pos.y == y) )
+
 				 {
 					 System::Drawing::Point from = (System::Drawing::Point)pbSelected->Tag;
 					 movePiece(from, System::Drawing::Point(x, y));

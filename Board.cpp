@@ -227,13 +227,12 @@ void Board::create_pieces()
 	}
 }
 
-
-std::pair<Node*,Node*> Board::possible_moves(Piece* piece)
+Board::NodePair Board::possible_moves(Piece* piece, uint8_t direction)
 {
 	Node* node = piece->location;
 
 	int left, right;
-	if (piece->color == Piece::Red) {
+	if (direction == DIRECTION_DOWN) {
 		left = Node::BOTTOM_LEFT;
 		right = Node::BOTTOM_RIGHT;
 	} else {
@@ -241,17 +240,41 @@ std::pair<Node*,Node*> Board::possible_moves(Piece* piece)
 		right = Node::TOP_RIGHT;
 	}
 
-	std::pair<Node*, Node*> p;
-	p.first = p.second = nullptr;
+	NodePair moves;
+	moves.first = moves.second = nullptr;
 	// Left
 	if (node->adjacents[left] != nullptr && node->adjacents[left]->piece == nullptr)
-		p.first = node->adjacents[left];
+		moves.first = node->adjacents[left];
 	
 	//Right
 	if (node->adjacents[right] != nullptr && node->adjacents[right]->piece == nullptr)
-		p.second = node->adjacents[right];
+		moves.second = node->adjacents[right];
 
-	return p;
+	return moves;
+}
+
+std::pair<Board::NodePair, Board::NodePair> Board::possible_moves(Piece* piece)
+{
+	uint8_t dir, odir; // direction and opposite direction
+	if (piece->color == Piece::Color::Red)
+	{
+		dir = DIRECTION_DOWN;
+		odir = DIRECTION_UP;
+	}
+	else
+	{
+		dir = DIRECTION_UP;
+		odir = DIRECTION_DOWN;
+	}
+
+	std::pair<NodePair, NodePair> moves;
+	moves.first = possible_moves(piece, dir);
+	if (piece->is_king)
+		moves.second = possible_moves(piece, odir);
+	else
+		moves.second.first = moves.second.second = nullptr;
+
+	return moves;
 }
 
 Board::TreeNodePtr Board::build_tree_node(Node* pos, Node* killed)
