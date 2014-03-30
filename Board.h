@@ -1,16 +1,22 @@
 #ifndef _BOARD
 #define _BOARD
 
-#define BOARD_LIMIT 64
+#include "Piece.h"
 #include <map>
 #include <cstdint>
+#include <utility>
+#include <memory>
+
 #define DIRECTION_UP 0
 #define DIRECTION_DOWN 1
+#define PIECES_COUNT 12
+#define BOARD_LIMIT 64
 
-struct Piece;
+// struct Piece;
 class MoveMemento;
 
 using std::map;
+
 
 struct Point
 {
@@ -43,11 +49,19 @@ struct Node
 	Node *adjacents[4];
 };
 
+struct TreeNode
+{
+    Node *pos;
+    Node *killed;
+    std::shared_ptr<TreeNode> left;
+    std::shared_ptr<TreeNode> right;
+};
+
 class Board
 {
 public:
+    typedef std::shared_ptr<::TreeNode> TreeNodePtr;
 	typedef map<Point, Node*, PointCompare> NodesType;
-	Board();
 	Node* get_node(const Point& point);
 	Piece* get_piece(const Point& point);
     void move_piece(Piece* piece, Node* from, Node* to);
@@ -56,10 +70,28 @@ public:
 	void remove_piece(Piece* piece);
     void print();
     MoveMemento get_memento();
+	std::pair<Node*, Node*> possible_moves(Piece* piece);
+    TreeNodePtr possible_jumps(Piece* piece, uint8_t depth = -1);
+    void print_possible_jumps(TreeNodePtr start);
+    void print_possible_jumps(Piece* piece);
+	void create_pieces();
+	static Board& getInstance()
+	{
+		if (instance == nullptr)
+			instance = new Board();
 
+		return *instance;
+	}
+
+	Piece *red_pieces[PIECES_COUNT];
+	Piece *black_pieces[PIECES_COUNT];
 private:
+	Board();
+    TreeNodePtr build_tree_node(Node* pos, Node* killed = nullptr);
+	void discover_jumps(TreeNodePtr tree_node, Piece::Color color, uint8_t depth = -1);
 	void link_adjacent_nodes(Node* node);
-	NodesType nodes;
+	NodesType nodes;	
+	static Board * instance;
 };
 
 #endif

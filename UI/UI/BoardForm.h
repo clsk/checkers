@@ -1,9 +1,9 @@
 #pragma once
-#include "../../Game.h"
+#include "../../Board.h"
 #include <iostream>
 
 #define BOARD_MARGIN 13
-#define SQUARE_DIM 58 // 58x58
+#define SQUARE_DIMENSIONS 58 // 58x58
 
 using std::cout;
 using std::endl;
@@ -16,17 +16,14 @@ namespace UI {
 	using namespace System::Data;
 	using namespace System::Drawing;
 
-	/// <summary>
-	/// Summary for BoardForm
-	/// </summary>
 	public ref class BoardForm : public System::Windows::Forms::Form
 	{
+		bool myTurn = false;
 	public:
 		BoardForm(void)
 		{
 			InitializeComponent();
-			Game::instance().create_board();
-			Game::instance().create_pieces();
+			Board::getInstance().create_pieces();
 
 			loadPieces();
 		}
@@ -34,8 +31,8 @@ namespace UI {
 		void loadPieces()
 		{
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(BoardForm::typeid));
-			Piece **redPieces = Game::instance().red_pieces;
-			Piece **blackPieces = Game::instance().black_pieces;
+			Piece **redPieces = Board::getInstance().red_pieces;
+			Piece **blackPieces = Board::getInstance().black_pieces;
 
 			for (int i = 0; i < PIECES_COUNT; i++)
 			{
@@ -66,7 +63,7 @@ namespace UI {
 
 		void movePiece(System::Drawing::Point from, System::Drawing::Point to)
 		{
-			 Game::instance().get_board().move_piece(::Point(from.X, from.Y), ::Point(to.X, to.Y));
+			 Board::getInstance().move_piece(::Point(from.X, from.Y), ::Point(to.X, to.Y));
 			 pbSelected->Tag = to;
 			 pbSelected->BackColor = Color::Transparent;
 			 tplBoard->Controls->Remove(pbSelected);
@@ -74,9 +71,6 @@ namespace UI {
 		}
 
 	protected:
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
 		~BoardForm()
 		{
 			if (components)
@@ -91,7 +85,7 @@ namespace UI {
 	private:
 		PictureBox^ pbSelected = nullptr;
 		std::pair<Node*, Node*>*possibleMoves = nullptr;
-		Game::TreeNodePtr* possibleJumps = nullptr;
+		Board::TreeNodePtr* possibleJumps = nullptr;
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -162,13 +156,13 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 				 // New piece selected
 				 pb->BackColor = Color::Aqua;
 				 pbSelected = pb;
-				 Piece *piece = Game::instance().get_board().get_piece(::Point(point.X, point.Y));
-				 Game::TreeNodePtr treeNode = Game::instance().possible_jumps(piece, 1);
+				 Piece *piece = Board::getInstance().get_piece(::Point(point.X, point.Y));
+				 Board::TreeNodePtr treeNode = Board::getInstance().possible_jumps(piece, 1);
 				 // If there are jumps to make, dont worry about possible moves
 				 if (treeNode->left != nullptr || treeNode->right != nullptr)
-					 possibleJumps = new Game::TreeNodePtr(treeNode);
+					 possibleJumps = new Board::TreeNodePtr(treeNode);
 				 else
-					 possibleMoves = new std::pair<Node*, Node*>(Game::instance().possible_moves(piece));
+					 possibleMoves = new std::pair<Node*, Node*>(Board::getInstance().possible_moves(piece));
 			 }
 			 else if (pb == pbSelected)
 			 {
@@ -194,17 +188,17 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 			 // Get Board position based on click position
 			 int x = -1;
-			 if (e->X > BOARD_MARGIN && e->X < (SQUARE_DIM*8) + BOARD_MARGIN)
+			 if (e->X > BOARD_MARGIN && e->X < (SQUARE_DIMENSIONS*8) + BOARD_MARGIN)
 			 {
-				 x = (e->X - BOARD_MARGIN) / SQUARE_DIM;
+				 x = (e->X - BOARD_MARGIN) / SQUARE_DIMENSIONS;
 			 }
 			 else
 				 return;
 
 			 int y = -1;
-			 if (e->Y > BOARD_MARGIN && e->Y < (SQUARE_DIM*8) + BOARD_MARGIN)
+			 if (e->Y > BOARD_MARGIN && e->Y < (SQUARE_DIMENSIONS*8) + BOARD_MARGIN)
 			 {
-				 y = (e->Y - BOARD_MARGIN) / SQUARE_DIM;
+				 y = (e->Y - BOARD_MARGIN) / SQUARE_DIMENSIONS;
 			 }
 			 else
 				 return;
@@ -212,7 +206,7 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 			 // User should be attempting a kill because there are jumps to make
 			 if (possibleJumps != nullptr)
 			 {
-				 Game::TreeNodePtr newPos = nullptr;
+				 Board::TreeNodePtr newPos = nullptr;
 				 if (possibleJumps->get()->left != nullptr && possibleJumps->get()->left->pos->pos.x == x && possibleJumps->get()->left->pos->pos.y == y)
 				 {
 					 newPos = possibleJumps->get()->left;
@@ -225,7 +219,7 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 				 if (newPos != nullptr)
 				 {
 					 // delete killed piece
-					 Game::instance().get_board().remove_piece(newPos->killed->piece);
+					 Board::getInstance().remove_piece(newPos->killed->piece);
 					 tplBoard->Controls->Remove(tplBoard->GetControlFromPosition(newPos->killed->pos.x + 1, newPos->killed->pos.y + 1));
 
 					 // Move to new place
@@ -235,12 +229,12 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 					 delete possibleJumps;
 					 possibleJumps = nullptr;
 					 // if there are more jumps to make, select piece again
-					 Game::TreeNodePtr treeNode = Game::instance().possible_jumps(Game::instance().get_board().get_piece(::Point(x,y)), 1);
+					 Board::TreeNodePtr treeNode = Board::getInstance().possible_jumps(Board::getInstance().get_piece(::Point(x,y)), 1);
 					 if (treeNode->left != nullptr || treeNode->right != nullptr)
 					 {
 						 // select piece again
 						 pbSelected->BackColor = Color::Aqua;
-						 possibleJumps = new Game::TreeNodePtr(treeNode);
+						 possibleJumps = new Board::TreeNodePtr(treeNode);
 					 }
 					 else
 					 {
