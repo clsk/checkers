@@ -130,6 +130,10 @@ void Board::remove_piece(Piece* piece)
 	{
 		piece->location->piece = nullptr;
 		piece->location = nullptr;
+		if (piece->color == Piece::Color::Red)
+			red_pieces[piece->index] = nullptr;
+		else
+			black_pieces[piece->index] = nullptr;
 		delete piece;
 	}
 }
@@ -196,6 +200,7 @@ void Board::create_pieces()
 
 			Node *node = get_node(Point(pos.x,pos.y));
 			piece->location = node;
+			piece->index = i;
 			node->piece = piece;
 			black_pieces[i] = piece;
 			//cout << i << " - Creating black piece at (" << pos.x << "," << pos.y << ")" << endl;
@@ -219,6 +224,7 @@ void Board::create_pieces()
 
 			Node *node = get_node(Point(pos.x,pos.y));
 			piece->location = node;
+			piece->index = i;
 			node->piece = piece;
 			red_pieces[i] = piece;
 			//cout << i << " - Creating red piece at (" << pos.x << "," << pos.y << ")" << endl;
@@ -227,52 +233,60 @@ void Board::create_pieces()
 	}
 }
 
-Board::NodePair Board::possible_moves(Piece* piece, uint8_t direction)
+inline Board::TreeNodePtr Board::discover_move(TreeNodePtr tree_node, uint8_t direction)
 {
-	Node* node = piece->location;
+	if (tree_node->pos != nullptr && tree_node->pos->adjacents[direction] != nullptr && tree_node->pos->adjacents[direction]->piece == nullptr)
+		return build_tree_node(tree_node->pos->adjacents[direction], nullptr);
 
-	int left, right;
-	if (direction == DIRECTION_DOWN) {
-		left = Node::BOTTOM_LEFT;
-		right = Node::BOTTOM_RIGHT;
-	} else {
-		left = Node::TOP_LEFT;
-		right = Node::TOP_RIGHT;
-	}
-
-	NodePair moves;
-	moves.first = moves.second = nullptr;
-	// Left
-	if (node->adjacents[left] != nullptr && node->adjacents[left]->piece == nullptr)
-		moves.first = node->adjacents[left];
-	
-	//Right
-	if (node->adjacents[right] != nullptr && node->adjacents[right]->piece == nullptr)
-		moves.second = node->adjacents[right];
-
-	return moves;
+	return nullptr;
 }
 
-std::pair<Board::NodePair, Board::NodePair> Board::possible_moves(Piece* piece)
+Board::TreeNodePtr Board::possible_moves(Piece* piece)
 {
-	uint8_t dir, odir; // direction and opposite direction
+	uint8_t oleft, oright;
+	TreeNodePtr root = build_tree_node(piece->location);
 	if (piece->color == Piece::Color::Red)
 	{
-		dir = DIRECTION_DOWN;
-		odir = DIRECTION_UP;
+		root->jumps[Node::BOTTOM_LEFT] = discover_move(root, Node::BOTTOM_LEFT);
+		root->jumps[Node::BOTTOM_RIGHT] = discover_move(root, Node::BOTTOM_RIGHT);
+
+		oleft = Node::TOP_LEFT;
+		oright = Node::TOP_RIGHT;
 	}
 	else
 	{
-		dir = DIRECTION_UP;
-		odir = DIRECTION_DOWN;
+		root->jumps[Node::TOP_LEFT] = discover_move(root, Node::TOP_LEFT);
+		root->jumps[Node::TOP_RIGHT] = discover_move(root, Node::TOP_RIGHT);
+		oleft = Node::BOTTOM_LEFT;
+		oright = Node::BOTTOM_RIGHT;
 	}
 
-	std::pair<NodePair, NodePair> moves;
-	moves.first = possible_moves(piece, dir);
 	if (piece->is_king)
-		moves.second = possible_moves(piece, odir);
+	{
+		root->jumps[oleft] = discover_move(root, oleft);
+		root->jumps[oright] = discover_move(root, oright);
+	}
+
+	return root;
+}
+
+
+std::vector<Board::TreeNodePtr> Board::moves_by_color(Piece::Color color)
+{
+	Piece ** pieces = nullptr;
+	if (color == Piece::Color::Red)
+		pieces = red_pieces;
 	else
-		moves.second.first = moves.second.second = nullptr;
+		pieces = black_pieces;
+
+	std::vector<TreeNodePtr> moves;
+	for (uint8_t i = 0; i < PIECES_COUNT && pieces[i] != nullptr; i++)
+	{
+		TreeNodePtr treePtr = possible_moves(pieces[i]);
+		if (treePtr->jumps[Node::TOP_LEFT] != nullptr || treePtr->jumps[Node::TOP_RIGHT] != nullptr ||
+			treePtr->jumps[Node::BOTTOM_LEFT] != nullptr || treePtr->jumps[Node::BOTTOM_RIGHT] != nullptr)
+			moves.push_back(treePtr);
+	}
 
 	return moves;
 }
@@ -292,6 +306,26 @@ Board::TreeNodePtr Board::possible_jumps(Piece* piece, uint8_t depth)
 	discover_jumps(start, piece->color, piece->is_king, depth);
 
 	return start;
+}
+
+std::vector<Board::TreeNodePtr> Board::jumps_by_color(Piece::Color color, uint8_t depth)
+{
+	Piece ** pieces = nullptr;
+	if (color == Piece::Color::Red)
+		pieces = red_pieces;
+	else
+		pieces = black_pieces;
+
+	std::vector<Board::TreeNodePtr> moves;
+	for (uint8_t i = 0; i < PIECES_COUNT && pieces[i] != nullptr; i++)
+	{
+		TreeNodePtr treePtr = possible_jumps(pieces[i], depth);
+		if (treePtr->jumps[Node::TOP_LEFT] != nullptr || treePtr->jumps[Node::TOP_RIGHT] != nullptr ||
+			treePtr->jumps[Node::BOTTOM_LEFT] != nullptr || treePtr->jumps[Node::BOTTOM_RIGHT] != nullptr)
+			moves.push_back(treePtr);
+	}
+
+	return moves;
 }
 
 inline bool Board::discover_jump(TreeNodePtr root_node, Piece::Color color, uint8_t direction, uint8_t depth)

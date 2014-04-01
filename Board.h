@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <utility>
 #include <memory>
+#include <vector>
 
 #define DIRECTION_UP 0
 #define DIRECTION_DOWN 1
@@ -14,9 +15,6 @@
 
 // struct Piece;
 class MoveMemento;
-
-using std::map;
-
 
 struct Point
 {
@@ -31,7 +29,7 @@ struct Point
 
 struct PointCompare
 {
-		bool operator()(const Point& _Left, const Point& _Right) const
+		bool operator()(const ::Point& _Left, const ::Point& _Right) const
 		{	// apply operator< to operands
 			if (_Left.x != _Right.x)
 				return (_Left.x < _Right.x);
@@ -43,7 +41,7 @@ struct PointCompare
 struct Node
 {
 	Node() { piece = nullptr; memset(adjacents, 0, 4); }
-	Point pos;
+	::Point pos;
 	Piece *piece; // null if no piece present
 	static const uint8_t BOTTOM_LEFT = 0, BOTTOM_RIGHT = 1, TOP_LEFT = 2, TOP_RIGHT = 3;
 	Node *adjacents[4];
@@ -60,21 +58,28 @@ class Board
 {
 public:
     typedef std::shared_ptr<::TreeNode> TreeNodePtr;
-	typedef map<Point, Node*, PointCompare> NodesType;
-	typedef std::pair<Node*, Node*> NodePair;
-	Node* get_node(const Point& point);
-	Piece* get_piece(const Point& point);
+	typedef std::map<::Point, Node*, PointCompare> NodesType;
+
+	Node* get_node(const ::Point& point);
+	Piece* get_piece(const ::Point& point);
+
 	void crown_piece(Piece* piece);
-	void crown_piece(const Point& point); 
+	void crown_piece(const ::Point& point); 
+
     void move_piece(Piece* piece, Node* from, Node* to);
-    bool move_piece(const Point& from, const Point& to);	
-	void remove_piece(const Point& location);
+    bool move_piece(const ::Point& from, const ::Point& to);	
+
+	void remove_piece(const ::Point& location);
 	void remove_piece(Piece* piece);
+
     void print();
+
     MoveMemento get_memento();
-	NodePair possible_moves(Piece* piece, uint8_t direction);
-	std::pair<NodePair, NodePair> possible_moves(Piece* piece);
+	TreeNodePtr possible_moves(Piece* piece);
+	std::vector<TreeNodePtr> moves_by_color(Piece::Color color);
+
     TreeNodePtr possible_jumps(Piece* piece, uint8_t depth = -1);
+	std::vector<TreeNodePtr> jumps_by_color(Piece::Color color, uint8_t depth = 1);
 	void create_pieces();
 	static Board& getInstance()
 	{
@@ -89,8 +94,9 @@ public:
 private:
 	Board();
     TreeNodePtr build_tree_node(Node* pos, Node* killed = nullptr);
+	TreeNodePtr discover_move(TreeNodePtr node, uint8_t direction);
 	bool discover_jump(TreeNodePtr tree_node, Piece::Color color, uint8_t direction, uint8_t depth);
-	void discover_jumps(TreeNodePtr tree_node, Piece::Color color, bool is_king, uint8_t depth = -1);
+	void discover_jumps(TreeNodePtr tree_node, Piece::Color color, bool is_king, uint8_t depth);
 	void link_adjacent_nodes(Node* node);
 	NodesType nodes;	
 	static Board * instance;

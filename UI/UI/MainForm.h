@@ -21,7 +21,7 @@ namespace UI {
 			//
 			//TODO: Add the constructor code here
 			//
-			UI::BoardForm^ boardForm = gcnew UI::BoardForm();
+			UI::BoardForm^ boardForm = gcnew UI::BoardForm(Piece::Color::Red);
 			boardForm->Show();
 		}
 

@@ -16,6 +16,7 @@ struct Piece
 	Color color;
 	bool is_king;
 	Node *location;
+	uint8_t index;
 };
 
 #endif

@@ -19,8 +19,9 @@ namespace UI {
 	public ref class BoardForm : public System::Windows::Forms::Form
 	{
 		bool myTurn = false;
+		Piece::Color myColor = Piece::Color::Red;
 	public:
-		BoardForm(void)
+		BoardForm(Piece::Color color) : myColor(color)
 		{
 			InitializeComponent();
 			Board::getInstance().create_pieces();
@@ -98,9 +99,11 @@ namespace UI {
 
 	private:
 		PictureBox^ pbSelected = nullptr;
-		std::pair<Board::NodePair, Board::NodePair>*possibleMoves = nullptr;
+		Board::TreeNodePtr*possibleMoves = nullptr;
 		Board::TreeNodePtr* possibleJumps = nullptr;
-		/// <summary>
+	private: System::Windows::Forms::StatusStrip^  statusStrip1;
+	private: System::Windows::Forms::ToolStripStatusLabel^  statusLabel;
+			 /// <summary>
 		/// Required designer variable.
 		/// </summary>
 		System::ComponentModel::Container ^components;
@@ -114,6 +117,9 @@ namespace UI {
 		{
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(BoardForm::typeid));
 			this->tplBoard = (gcnew System::Windows::Forms::TableLayoutPanel());
+			this->statusStrip1 = (gcnew System::Windows::Forms::StatusStrip());
+			this->statusLabel = (gcnew System::Windows::Forms::ToolStripStatusLabel());
+			this->statusStrip1->SuspendLayout();
 			this->SuspendLayout();
 			// 
 			// tplBoard
@@ -147,15 +153,34 @@ namespace UI {
 			this->tplBoard->TabIndex = 0;
 			this->tplBoard->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &BoardForm::tplBoard_MouseClick);
 			// 
+			// statusStrip1
+			// 
+			this->statusStrip1->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) { this->statusLabel });
+			this->statusStrip1->Location = System::Drawing::Point(0, 536);
+			this->statusStrip1->Name = L"statusStrip1";
+			this->statusStrip1->Size = System::Drawing::Size(753, 22);
+			this->statusStrip1->TabIndex = 1;
+			this->statusStrip1->Text = L"statusStrip1";
+			// 
+			// statusLabel
+			// 
+			this->statusLabel->Name = L"statusLabel";
+			this->statusLabel->Size = System::Drawing::Size(57, 17);
+			this->statusLabel->Text = L"Welcome";
+			// 
 			// BoardForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(753, 558);
+			this->Controls->Add(this->statusStrip1);
 			this->Controls->Add(this->tplBoard);
 			this->Name = L"BoardForm";
 			this->Text = L"BoardForm";
+			this->statusStrip1->ResumeLayout(false);
+			this->statusStrip1->PerformLayout();
 			this->ResumeLayout(false);
+			this->PerformLayout();
 
 		}
 #pragma endregion
@@ -177,7 +202,7 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 					 treeNode->jumps[Node::BOTTOM_LEFT] != nullptr || treeNode->jumps[Node::BOTTOM_RIGHT])
 					 possibleJumps = new Board::TreeNodePtr(treeNode);
 				 else
-					 possibleMoves = new std::pair<Board::NodePair, Board::NodePair>(Board::getInstance().possible_moves(piece));
+					 possibleMoves = new Board::TreeNodePtr(Board::getInstance().possible_moves(piece));
 			 }
 			 else if (pb == pbSelected)
 			 {
@@ -270,11 +295,10 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 			 }
 			 else if (possibleMoves != nullptr)
 			 {
-				 if ((possibleMoves->first.first != nullptr && possibleMoves->first.first->pos.x == x && possibleMoves->first.first->pos.y == y) ||
-					 (possibleMoves->first.second != nullptr && possibleMoves->first.second->pos.x == x && possibleMoves->first.second->pos.y == y) ||
-					 (possibleMoves->second.first != nullptr && possibleMoves->second.first->pos.x == x && possibleMoves->second.first->pos.y == y) ||
-					 (possibleMoves->second.second != nullptr && possibleMoves->second.second->pos.x == x && possibleMoves->second.second->pos.y == y) )
-
+				 if ((possibleMoves->get()->jumps[Node::TOP_LEFT] != nullptr && possibleMoves->get()->jumps[Node::TOP_LEFT]->pos->pos.x == x && possibleMoves->get()->jumps[Node::TOP_LEFT]->pos->pos.y == y) ||
+					 (possibleMoves->get()->jumps[Node::TOP_RIGHT] != nullptr && possibleMoves->get()->jumps[Node::TOP_RIGHT]->pos->pos.x == x && possibleMoves->get()->jumps[Node::TOP_RIGHT]->pos->pos.y == y) ||
+					 (possibleMoves->get()->jumps[Node::BOTTOM_LEFT] != nullptr && possibleMoves->get()->jumps[Node::BOTTOM_LEFT]->pos->pos.x == x && possibleMoves->get()->jumps[Node::BOTTOM_LEFT]->pos->pos.y == y) ||
+					 (possibleMoves->get()->jumps[Node::BOTTOM_RIGHT] != nullptr && possibleMoves->get()->jumps[Node::BOTTOM_RIGHT]->pos->pos.x == x && possibleMoves->get()->jumps[Node::BOTTOM_RIGHT]->pos->pos.y == y))
 				 {
 					 System::Drawing::Point from = (System::Drawing::Point)pbSelected->Tag;
 					 movePiece(from, System::Drawing::Point(x, y));
