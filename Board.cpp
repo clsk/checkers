@@ -151,7 +151,7 @@ void Board::print()
     for (int y = 0; y < 8; y++) {
         cout << y;
         for (int x = 0; x < 8; x += 2) {
-            bool odd = bool(y%2);
+            bool odd = y%2 != 0;
             Point point;
             if (odd) {
                 point.x = x+1;
@@ -289,71 +289,61 @@ Board::TreeNodePtr Board::possible_jumps(Piece* piece, uint8_t depth)
 {
 	// Build possible jumps
 	auto start = build_tree_node(piece->location);
-	discover_jumps(start, piece->color, depth);
+	discover_jumps(start, piece->color, piece->is_king, depth);
 
 	return start;
 }
 
-void Board::print_possible_jumps(TreeNodePtr start)
+inline bool Board::discover_jump(TreeNodePtr root_node, Piece::Color color, uint8_t direction, uint8_t depth)
 {
-    if (start != nullptr)
-    {
-        cout << "(" << start->pos->pos.x << "," << start->pos->pos.y << "): ";
-    }
-    
-    if (start->left != nullptr)
-    {
-        cout << "(left)" << "(" << start->left->pos->pos.x << "," << start->left->pos->pos.y << ")";
-        print_possible_jumps(start->left);
-    }
-    
-    if (start->right != nullptr)
-    {
-        cout << "(right)" << "(" << start->right->pos->pos.x << "," << start->right->pos->pos.y << ")";
-        print_possible_jumps(start->right);
-    }
-    
-    cout << endl;
+	if (root_node == nullptr)
+		return false;
+
+	Node* tree_node = root_node->pos->adjacents[direction];
+	if (tree_node != nullptr && tree_node->piece != nullptr && tree_node->piece->color != color)
+	{
+		// We have a piece, now check for emptiness in [direction]
+		if (tree_node->adjacents[direction] != nullptr && tree_node->adjacents[direction]->piece == nullptr)
+		{
+			root_node->jumps[direction] = build_tree_node(tree_node->adjacents[direction], tree_node);
+			return true;
+		}
+	}
+
+	return false;
 }
 
-void Board::print_possible_jumps(Piece* piece)
+void Board::discover_jumps(TreeNodePtr tree_node, Piece::Color color, bool is_king, uint8_t depth)
 {
-    print_possible_jumps(possible_jumps(piece));
-}
-
-void Board::discover_jumps(TreeNodePtr tree_node, Piece::Color color, uint8_t depth)
-{
-	if (depth == 0 || tree_node == nullptr)
+	if (depth == 0 || tree_node == nullptr || tree_node->pos == nullptr)
 		return;
     
-	int left, right;
+	int left, right, oleft, oright;
 	if (color == Piece::Red) {
 		left = Node::BOTTOM_LEFT;
 		right = Node::BOTTOM_RIGHT;
+		oleft = Node::TOP_LEFT;
+		oright = Node::TOP_RIGHT;
 	} else {
 		left = Node::TOP_LEFT;
 		right = Node::TOP_RIGHT;
+		oleft = Node::BOTTOM_LEFT;
+		oright = Node::BOTTOM_RIGHT;
 	}
 
-	Node* left_tree_node = nullptr;
-	Node* right_tree_node = nullptr;
-	--depth; // Decrease depth here, for recursive call
-	left_tree_node = tree_node->pos->adjacents[left];
-	if (left_tree_node != nullptr && left_tree_node->piece != nullptr && left_tree_node->piece->color != color) {
-		// We have a piece, check for emptiness left
-		if (left_tree_node->adjacents[left] != nullptr && left_tree_node->adjacents[left]->piece == nullptr) {
-			tree_node->left = build_tree_node(left_tree_node->adjacents[left], left_tree_node);
-			discover_jumps(tree_node->left, color, depth);
-		}
-	}
+	if (discover_jump(tree_node, color, left, depth))
+		discover_jumps(tree_node->jumps[left], color, is_king, depth-1);
 
-	right_tree_node = tree_node->pos->adjacents[right] != nullptr ? tree_node->pos->adjacents[right] : nullptr;
-	if (right_tree_node != nullptr && right_tree_node->piece != nullptr && right_tree_node->piece->color != color) {
-		// We have a piece, check for emptiness right
-		if (right_tree_node->adjacents[right] != nullptr && right_tree_node->adjacents[right]->piece == nullptr) {
-			tree_node->right = build_tree_node(right_tree_node->adjacents[right], right_tree_node);
-			discover_jumps(tree_node->right, color, depth);
-		}
+	if (discover_jump(tree_node, color, right, depth))
+		discover_jumps(tree_node->jumps[right], color, is_king, depth-1);
+
+	if (is_king)
+	{
+		if (discover_jump(tree_node, color, oleft, depth))
+			discover_jumps(tree_node->jumps[oleft], color, is_king, depth-1);
+
+		if (discover_jump(tree_node, color, oright, depth))
+			discover_jumps(tree_node->jumps[oright], color, is_king, depth-1);
 	}
 }
 

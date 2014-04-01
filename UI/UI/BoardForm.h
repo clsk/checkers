@@ -173,7 +173,8 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 				 Piece *piece = Board::getInstance().get_piece(::Point(point.X, point.Y));
 				 Board::TreeNodePtr treeNode = Board::getInstance().possible_jumps(piece, 1);
 				 // If there are jumps to make, dont worry about possible moves
-				 if (treeNode->left != nullptr || treeNode->right != nullptr)
+				 if (treeNode->jumps[Node::TOP_LEFT] != nullptr || treeNode->jumps[Node::TOP_RIGHT] != nullptr ||
+					 treeNode->jumps[Node::BOTTOM_LEFT] != nullptr || treeNode->jumps[Node::BOTTOM_RIGHT])
 					 possibleJumps = new Board::TreeNodePtr(treeNode);
 				 else
 					 possibleMoves = new std::pair<Board::NodePair, Board::NodePair>(Board::getInstance().possible_moves(piece));
@@ -196,7 +197,7 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 			 }
 			 else 
 			 {
-
+				 // Ignore this click
 			 }
 }
 private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
@@ -221,13 +222,21 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 			 if (possibleJumps != nullptr)
 			 {
 				 Board::TreeNodePtr newPos = nullptr;
-				 if (possibleJumps->get()->left != nullptr && possibleJumps->get()->left->pos->pos.x == x && possibleJumps->get()->left->pos->pos.y == y)
+				 if (possibleJumps->get()->jumps[Node::TOP_LEFT] != nullptr && possibleJumps->get()->jumps[Node::TOP_LEFT]->pos->pos.x == x && possibleJumps->get()->jumps[Node::TOP_LEFT]->pos->pos.y == y)
 				 {
-					 newPos = possibleJumps->get()->left;
+					 newPos = possibleJumps->get()->jumps[Node::TOP_LEFT];
 				 }
-				 else if (possibleJumps->get()->right != nullptr && possibleJumps->get()->right->pos->pos.x == x && possibleJumps->get()->right->pos->pos.y == y)
+				 else if (possibleJumps->get()->jumps[Node::TOP_RIGHT] != nullptr && possibleJumps->get()->jumps[Node::TOP_RIGHT]->pos->pos.x == x && possibleJumps->get()->jumps[Node::TOP_RIGHT]->pos->pos.y == y)
 				 {
-					 newPos = possibleJumps->get()->right;
+					 newPos = possibleJumps->get()->jumps[Node::TOP_RIGHT];
+				 }
+				 else if (possibleJumps->get()->jumps[Node::BOTTOM_LEFT] != nullptr && possibleJumps->get()->jumps[Node::BOTTOM_LEFT]->pos->pos.x == x && possibleJumps->get()->jumps[Node::BOTTOM_LEFT]->pos->pos.y == y)
+				 {
+					 newPos = possibleJumps->get()->jumps[Node::BOTTOM_LEFT];
+				 }
+				 else if (possibleJumps->get()->jumps[Node::BOTTOM_RIGHT] != nullptr && possibleJumps->get()->jumps[Node::BOTTOM_RIGHT]->pos->pos.x == x && possibleJumps->get()->jumps[Node::BOTTOM_RIGHT]->pos->pos.y == y)
+				 {
+					 newPos = possibleJumps->get()->jumps[Node::BOTTOM_RIGHT];
 				 }
 
 				 if (newPos != nullptr)
@@ -246,7 +255,8 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 					 crownIfNeeded(pbSelected, x, y);
 					 // if there are more jumps to make, select piece again
 					 Board::TreeNodePtr treeNode = Board::getInstance().possible_jumps(Board::getInstance().get_piece(::Point(x,y)), 1);
-					 if (treeNode->left != nullptr || treeNode->right != nullptr)
+					 if (treeNode->jumps[Node::TOP_LEFT] != nullptr || treeNode->jumps[Node::TOP_RIGHT] != nullptr ||
+						 treeNode->jumps[Node::BOTTOM_LEFT] != nullptr || treeNode->jumps[Node::BOTTOM_RIGHT])
 					 {
 						 // select piece again
 						 pbSelected->BackColor = Color::Aqua;

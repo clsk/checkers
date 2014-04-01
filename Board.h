@@ -45,7 +45,7 @@ struct Node
 	Node() { piece = nullptr; memset(adjacents, 0, 4); }
 	Point pos;
 	Piece *piece; // null if no piece present
-	static const int BOTTOM_LEFT = 0, BOTTOM_RIGHT = 1, TOP_LEFT = 2, TOP_RIGHT = 3;
+	static const uint8_t BOTTOM_LEFT = 0, BOTTOM_RIGHT = 1, TOP_LEFT = 2, TOP_RIGHT = 3;
 	Node *adjacents[4];
 };
 
@@ -53,8 +53,7 @@ struct TreeNode
 {
     Node *pos;
     Node *killed;
-    std::shared_ptr<TreeNode> left;
-    std::shared_ptr<TreeNode> right;
+	std::shared_ptr<TreeNode> jumps[4];
 };
 
 class Board
@@ -76,8 +75,6 @@ public:
 	NodePair possible_moves(Piece* piece, uint8_t direction);
 	std::pair<NodePair, NodePair> possible_moves(Piece* piece);
     TreeNodePtr possible_jumps(Piece* piece, uint8_t depth = -1);
-    void print_possible_jumps(TreeNodePtr start);
-    void print_possible_jumps(Piece* piece);
 	void create_pieces();
 	static Board& getInstance()
 	{
@@ -92,7 +89,8 @@ public:
 private:
 	Board();
     TreeNodePtr build_tree_node(Node* pos, Node* killed = nullptr);
-	void discover_jumps(TreeNodePtr tree_node, Piece::Color color, uint8_t depth = -1);
+	bool discover_jump(TreeNodePtr tree_node, Piece::Color color, uint8_t direction, uint8_t depth);
+	void discover_jumps(TreeNodePtr tree_node, Piece::Color color, bool is_king, uint8_t depth = -1);
 	void link_adjacent_nodes(Node* node);
 	NodesType nodes;	
 	static Board * instance;
