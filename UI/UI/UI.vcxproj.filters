@@ -56,7 +56,7 @@
     <ClInclude Include="AI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EnemyInterface.h">
+    <ClInclude Include="IEnemy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

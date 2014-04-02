@@ -80,6 +80,7 @@ public:
 
     TreeNodePtr possible_jumps(Piece* piece, uint8_t depth = -1);
 	std::vector<TreeNodePtr> jumps_by_color(Piece::Color color, uint8_t depth = 1);
+	bool has_possible_jumps(Piece::Color color);
 	void create_pieces();
 	static Board& getInstance()
 	{

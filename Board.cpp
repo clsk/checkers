@@ -283,8 +283,8 @@ std::vector<Board::TreeNodePtr> Board::moves_by_color(Piece::Color color)
 	for (uint8_t i = 0; i < PIECES_COUNT && pieces[i] != nullptr; i++)
 	{
 		TreeNodePtr treePtr = possible_moves(pieces[i]);
-		if (treePtr->jumps[Node::TOP_LEFT] != nullptr || treePtr->jumps[Node::TOP_RIGHT] != nullptr ||
-			treePtr->jumps[Node::BOTTOM_LEFT] != nullptr || treePtr->jumps[Node::BOTTOM_RIGHT] != nullptr)
+		if (treePtr->jumps[Node::TOP_LEFT] || treePtr->jumps[Node::TOP_RIGHT] ||
+			treePtr->jumps[Node::BOTTOM_LEFT] || treePtr->jumps[Node::BOTTOM_RIGHT])
 			moves.push_back(treePtr);
 	}
 
@@ -310,7 +310,7 @@ Board::TreeNodePtr Board::possible_jumps(Piece* piece, uint8_t depth)
 
 std::vector<Board::TreeNodePtr> Board::jumps_by_color(Piece::Color color, uint8_t depth)
 {
-	Piece ** pieces = nullptr;
+	Piece** pieces = nullptr;
 	if (color == Piece::Color::Red)
 		pieces = red_pieces;
 	else
@@ -320,12 +320,31 @@ std::vector<Board::TreeNodePtr> Board::jumps_by_color(Piece::Color color, uint8_
 	for (uint8_t i = 0; i < PIECES_COUNT && pieces[i] != nullptr; i++)
 	{
 		TreeNodePtr treePtr = possible_jumps(pieces[i], depth);
-		if (treePtr->jumps[Node::TOP_LEFT] != nullptr || treePtr->jumps[Node::TOP_RIGHT] != nullptr ||
-			treePtr->jumps[Node::BOTTOM_LEFT] != nullptr || treePtr->jumps[Node::BOTTOM_RIGHT] != nullptr)
+		if (treePtr->jumps[Node::TOP_LEFT] || treePtr->jumps[Node::TOP_RIGHT] ||
+			treePtr->jumps[Node::BOTTOM_LEFT] || treePtr->jumps[Node::BOTTOM_RIGHT])
 			moves.push_back(treePtr);
 	}
 
 	return moves;
+}
+
+bool Board::has_possible_jumps(Piece::Color color)
+{
+	Piece** pieces = nullptr;
+	if (color == Piece::Color::Red)
+		pieces = red_pieces;
+	else
+		pieces = black_pieces;
+
+	for (uint8_t i = 0; i < PIECES_COUNT && pieces[i] != nullptr; i++)
+	{
+		TreeNodePtr treePtr = possible_jumps(pieces[i], 1);
+		if (treePtr->jumps[Node::TOP_LEFT] || treePtr->jumps[Node::TOP_RIGHT] ||
+			treePtr->jumps[Node::BOTTOM_LEFT] || treePtr->jumps[Node::BOTTOM_RIGHT])
+			return true;
+	}
+
+	return false;
 }
 
 inline bool Board::discover_jump(TreeNodePtr root_node, Piece::Color color, uint8_t direction, uint8_t depth)

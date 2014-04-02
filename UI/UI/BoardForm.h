@@ -1,5 +1,6 @@
 #pragma once
 #include "../../Board.h"
+#include "IEnemy.h"
 #include <iostream>
 
 #define BOARD_MARGIN 13
@@ -20,13 +21,23 @@ namespace UI {
 	{
 		bool myTurn = false;
 		Piece::Color myColor = Piece::Color::Red;
+
 	public:
+		IEnemy^ myEnemy;
 		BoardForm(Piece::Color color) : myColor(color)
 		{
 			InitializeComponent();
 			Board::getInstance().create_pieces();
 
 			loadPieces();
+		}
+		void play()
+		{
+			myTurn = true;
+			if (Board::getInstance().has_possible_jumps(myColor))
+				statusLabel->Text = "Make a jump";
+			else
+				statusLabel->Text = "Make a move";
 		}
 
 		void loadPieces()
@@ -64,11 +75,22 @@ namespace UI {
 
 		void movePiece(System::Drawing::Point from, System::Drawing::Point to)
 		{
+			 PictureBox^ pb = (PictureBox^)tplBoard->GetControlFromPosition(from.X + 1, from.Y + 1);
 			 Board::getInstance().move_piece(::Point(from.X, from.Y), ::Point(to.X, to.Y));
-			 pbSelected->Tag = to;
-			 pbSelected->BackColor = Color::Transparent;
-			 tplBoard->Controls->Remove(pbSelected);
-			 tplBoard->Controls->Add(pbSelected, to.X + 1, to.Y + 1);
+			 pb->Tag = to;
+			 pb->BackColor = Color::Transparent;
+			 tplBoard->Controls->Remove(pb);
+			 tplBoard->Controls->Add(pb, to.X + 1, to.Y + 1);
+		}
+
+		void jumpPiece(System::Drawing::Point from, Board::TreeNodePtr nodePtr)
+		{
+			 // delete killed piece
+			 Board::getInstance().remove_piece(nodePtr->killed->piece);
+			 tplBoard->Controls->Remove(tplBoard->GetControlFromPosition(nodePtr->killed->pos.x + 1, nodePtr->killed->pos.y + 1));
+
+			 // Move to new place
+			 movePiece(from, System::Drawing::Point(nodePtr->pos->pos.x, nodePtr->pos->pos.y));
 		}
 
 		void crownIfNeeded(PictureBox^ pb, int x, int y)
@@ -187,15 +209,21 @@ namespace UI {
 
 
 private: System::Void piece_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 if (myTurn == false)
+				 return;
+
 			 PictureBox^ pb = (PictureBox^)sender;
 			 System::Drawing::Point point = (System::Drawing::Point)pb->Tag;
+			 Piece *piece = Board::getInstance().get_piece(::Point(point.X, point.Y));
+			 if (piece->color != myColor)
+				 return;
+
 			 // MessageBox::Show("(" + point.X + "," + point.Y + ")");
 			 if (pbSelected == nullptr)
 			 {
 				 // New piece selected
 				 pb->BackColor = Color::Aqua;
 				 pbSelected = pb;
-				 Piece *piece = Board::getInstance().get_piece(::Point(point.X, point.Y));
 				 Board::TreeNodePtr treeNode = Board::getInstance().possible_jumps(piece, 1);
 				 // If there are jumps to make, dont worry about possible moves
 				 if (treeNode->jumps[Node::TOP_LEFT] != nullptr || treeNode->jumps[Node::TOP_RIGHT] != nullptr ||
@@ -226,6 +254,9 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 			 }
 }
 private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 if (myTurn == false)
+				 return;
+
 			 // Get Board position based on click position
 			 int x = -1;
 			 if (e->X > BOARD_MARGIN && e->X < (SQUARE_DIMENSIONS*8) + BOARD_MARGIN)
@@ -266,13 +297,9 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 
 				 if (newPos != nullptr)
 				 {
-					 // delete killed piece
-					 Board::getInstance().remove_piece(newPos->killed->piece);
-					 tplBoard->Controls->Remove(tplBoard->GetControlFromPosition(newPos->killed->pos.x + 1, newPos->killed->pos.y + 1));
-
-					 // Move to new place
 					 System::Drawing::Point from = (System::Drawing::Point)pbSelected->Tag;
-					 movePiece(from, System::Drawing::Point(x, y));
+
+					 jumpPiece(from, newPos);
 					 // delete possibleJumps
 					 delete possibleJumps;
 					 possibleJumps = nullptr;
@@ -290,6 +317,8 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 					 else
 					 {
 						 pbSelected = nullptr;
+						 myTurn = false;
+						 myEnemy->play();
 					 }
 				 }
 			 }
@@ -306,6 +335,8 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 					 pbSelected = nullptr;
 					 delete possibleMoves;
 					 possibleMoves = nullptr;
+					 myTurn = false;
+					 myEnemy->play();
 				 }
 			 }
 }

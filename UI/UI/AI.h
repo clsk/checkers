@@ -1,15 +1,16 @@
 #pragma once
 #include "../../Piece.h"
+#include "IEnemy.h"
 namespace UI
 {
 	ref class BoardForm;
 }
 using namespace UI;
-ref class AI
+ref class AI : IEnemy
 {
 public:
 	AI(Piece::Color color, BoardForm^ boardForm);
-	void play();
+	virtual void play();
 	virtual ~AI() {}
 
 private:

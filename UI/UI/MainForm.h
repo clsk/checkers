@@ -1,5 +1,6 @@
 #pragma once
 #include "BoardForm.h"
+#include "AI.h"
 namespace UI {
 
 	using namespace System;
@@ -22,7 +23,10 @@ namespace UI {
 			//TODO: Add the constructor code here
 			//
 			UI::BoardForm^ boardForm = gcnew UI::BoardForm(Piece::Color::Red);
+			AI^ ai = gcnew AI(Piece::Color::Black, boardForm);
+			boardForm->myEnemy = ai;
 			boardForm->Show();
+			boardForm->play();
 		}
 
 	protected:
