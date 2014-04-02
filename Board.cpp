@@ -320,7 +320,7 @@ std::vector<Board::TreeNodePtr> Board::jumps_by_color(Piece::Color color, uint8_
 		pieces = black_pieces;
 
 	std::vector<Board::TreeNodePtr> moves;
-	for (uint8_t i = 0; i < PIECES_COUNT && pieces[i] != nullptr; i++)
+	for (uint8_t i = 0; i < PIECES_COUNT; i++)
 	{
 		if (pieces[i] == nullptr)
 			continue;

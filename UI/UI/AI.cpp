@@ -17,6 +17,7 @@ void AI::play()
 		int j = r->Next(jumps.size() - 1);
 		Board::TreeNodePtr nodePtr = jumps[j];
 		Piece* piece = nodePtr->pos->piece;
+		bool crowned = false;
 		do {
 			uint8_t i = 0;
 			for (; i < 4; i++)
@@ -24,13 +25,14 @@ void AI::play()
 				if (nodePtr->jumps[i] != nullptr)
 				{
 					m_boardForm->jumpPiece(System::Drawing::Point(nodePtr->pos->pos.x, nodePtr->pos->pos.y), nodePtr->jumps[i]);
+					bool crowned = m_boardForm->crownIfNeeded(nodePtr->jumps[i]->pos->pos.x, nodePtr->jumps[i]->pos->pos.y);
 					break;
 				}
 			}
 
 			nodePtr = Board::getInstance().possible_jumps(piece, 1);
-		} while (nodePtr->jumps[Node::TOP_LEFT] || nodePtr->jumps[Node::TOP_RIGHT] || 
-			     nodePtr->jumps[Node::BOTTOM_LEFT] || nodePtr->jumps[Node::BOTTOM_RIGHT]);
+		} while ((!crowned) && (nodePtr->jumps[Node::TOP_LEFT] || nodePtr->jumps[Node::TOP_RIGHT] || 
+			     nodePtr->jumps[Node::BOTTOM_LEFT] || nodePtr->jumps[Node::BOTTOM_RIGHT]));
 	}
 	else
 	{
@@ -47,6 +49,7 @@ void AI::play()
 				{
 					m_boardForm->movePiece(System::Drawing::Point(nodePtr->pos->pos.x, nodePtr->pos->pos.y),
 										System::Drawing::Point(nodePtr->jumps[i]->pos->pos.x, nodePtr->jumps[i]->pos->pos.y));
+					m_boardForm->crownIfNeeded(nodePtr->jumps[i]->pos->pos.x, nodePtr->jumps[i]->pos->pos.y);
 					break;
 				}
 			}

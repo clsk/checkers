@@ -93,18 +93,22 @@ namespace UI {
 			 movePiece(from, System::Drawing::Point(nodePtr->pos->pos.x, nodePtr->pos->pos.y));
 		}
 
-		void crownIfNeeded(PictureBox^ pb, int x, int y)
+		bool crownIfNeeded(int x, int y)
 		{
 			 if (y == 7 || y == 0)
 			 {
 				 Piece *piece = Board::getInstance().get_piece(::Point(x, y));
 				 if (!piece->is_king)
 				 {
+					 PictureBox^ pb = (PictureBox^)tplBoard->GetControlFromPosition(x + 1, y + 1);
 					 Board::getInstance().crown_piece(piece);
 					 System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(BoardForm::typeid));
 					 pb->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(piece->color == Piece::Color::Red ? L"red_king" : L"black_king")));
+					 return true;
 				 }
 			 }
+
+			 return false;
 		}
 
 	protected:
@@ -304,11 +308,11 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 					 delete possibleJumps;
 					 possibleJumps = nullptr;
 					 
-					 crownIfNeeded(pbSelected, x, y);
+					 bool crowned = crownIfNeeded(x, y);
 					 // if there are more jumps to make, select piece again
 					 Board::TreeNodePtr treeNode = Board::getInstance().possible_jumps(Board::getInstance().get_piece(::Point(x,y)), 1);
-					 if (treeNode->jumps[Node::TOP_LEFT] != nullptr || treeNode->jumps[Node::TOP_RIGHT] != nullptr ||
-						 treeNode->jumps[Node::BOTTOM_LEFT] != nullptr || treeNode->jumps[Node::BOTTOM_RIGHT])
+					 if (!crowned && (treeNode->jumps[Node::TOP_LEFT] != nullptr || treeNode->jumps[Node::TOP_RIGHT] != nullptr ||
+						 treeNode->jumps[Node::BOTTOM_LEFT] != nullptr || treeNode->jumps[Node::BOTTOM_RIGHT]))
 					 {
 						 // select piece again
 						 pbSelected->BackColor = Color::Aqua;
@@ -331,7 +335,7 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 				 {
 					 System::Drawing::Point from = (System::Drawing::Point)pbSelected->Tag;
 					 movePiece(from, System::Drawing::Point(x, y));
-					 crownIfNeeded(pbSelected, x, y);
+					 crownIfNeeded(x, y);
 					 pbSelected = nullptr;
 					 delete possibleMoves;
 					 possibleMoves = nullptr;
