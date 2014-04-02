@@ -77,6 +77,25 @@ Board::Board()
 	}
 }
 
+Board::~Board()
+{
+	// Delete Pieces
+	for (int i = 0; i < PIECES_COUNT; i++)
+	{
+		if (red_pieces[i])
+			delete red_pieces[i];
+
+		if (black_pieces[i])
+			delete black_pieces[i];
+	}
+
+	// Delete Nodes
+	for (auto iter : nodes)
+	{
+		delete iter.second;
+	}
+}
+
 Node* Board::get_node(const Point& pos)
 {
 	NodesType::iterator Iter = nodes.find(pos);
@@ -405,5 +424,3 @@ void Board::discover_jumps(TreeNodePtr tree_node, Piece::Color color, bool is_ki
 			discover_jumps(tree_node->jumps[oright], color, is_king, depth-1);
 	}
 }
-
-Board* Board::instance = nullptr;

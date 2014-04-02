@@ -1,5 +1,6 @@
 #pragma once
 #include "../../Piece.h"
+#include "../../Board.h"
 #include "IEnemy.h"
 namespace UI
 {
@@ -16,5 +17,6 @@ public:
 private:
 	BoardForm^ m_boardForm;
 	Piece::Color myColor;
+	Board& board;
 };
 

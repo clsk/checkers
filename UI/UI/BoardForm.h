@@ -24,27 +24,39 @@ namespace UI {
 
 	public:
 		IEnemy^ myEnemy;
-		BoardForm(Piece::Color color) : myColor(color)
+
+		BoardForm(Piece::Color color) : myColor(color), board(new Board())
 		{
 			InitializeComponent();
-			Board::getInstance().create_pieces();
+			board->create_pieces();
 
 			loadPieces();
 		}
+		~BoardForm()
+		{
+			if (possibleJumps)
+				delete possibleJumps;
+			if (possibleMoves)
+				delete possibleMoves;
+
+			delete board;
+		}
+
 		void play()
 		{
 			myTurn = true;
-			if (Board::getInstance().has_possible_jumps(myColor))
+			if (board->has_possible_jumps(myColor))
 				statusLabel->Text = "Make a jump";
 			else
 				statusLabel->Text = "Make a move";
 		}
 
+		Board& getBoard() { return *board; }
 		void loadPieces()
 		{
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(BoardForm::typeid));
-			Piece **redPieces = Board::getInstance().red_pieces;
-			Piece **blackPieces = Board::getInstance().black_pieces;
+			Piece **redPieces = board->red_pieces;
+			Piece **blackPieces = board->black_pieces;
 
 			for (int i = 0; i < PIECES_COUNT; i++)
 			{
@@ -76,7 +88,7 @@ namespace UI {
 		void movePiece(System::Drawing::Point from, System::Drawing::Point to)
 		{
 			 PictureBox^ pb = (PictureBox^)tplBoard->GetControlFromPosition(from.X + 1, from.Y + 1);
-			 Board::getInstance().move_piece(::Point(from.X, from.Y), ::Point(to.X, to.Y));
+			 board->move_piece(::Point(from.X, from.Y), ::Point(to.X, to.Y));
 			 pb->Tag = to;
 			 pb->BackColor = Color::Transparent;
 			 tplBoard->Controls->Remove(pb);
@@ -86,7 +98,7 @@ namespace UI {
 		void jumpPiece(System::Drawing::Point from, Board::TreeNodePtr nodePtr)
 		{
 			 // delete killed piece
-			 Board::getInstance().remove_piece(nodePtr->killed->piece);
+			 board->remove_piece(nodePtr->killed->piece);
 			 tplBoard->Controls->Remove(tplBoard->GetControlFromPosition(nodePtr->killed->pos.x + 1, nodePtr->killed->pos.y + 1));
 
 			 // Move to new place
@@ -97,11 +109,11 @@ namespace UI {
 		{
 			 if (y == 7 || y == 0)
 			 {
-				 Piece *piece = Board::getInstance().get_piece(::Point(x, y));
+				 Piece *piece = board->get_piece(::Point(x, y));
 				 if (!piece->is_king)
 				 {
 					 PictureBox^ pb = (PictureBox^)tplBoard->GetControlFromPosition(x + 1, y + 1);
-					 Board::getInstance().crown_piece(piece);
+					 board->crown_piece(piece);
 					 System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(BoardForm::typeid));
 					 pb->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(piece->color == Piece::Color::Red ? L"red_king" : L"black_king")));
 					 return true;
@@ -127,6 +139,7 @@ namespace UI {
 		PictureBox^ pbSelected = nullptr;
 		Board::TreeNodePtr*possibleMoves = nullptr;
 		Board::TreeNodePtr* possibleJumps = nullptr;
+		Board* board;
 	private: System::Windows::Forms::StatusStrip^  statusStrip1;
 	private: System::Windows::Forms::ToolStripStatusLabel^  statusLabel;
 			 /// <summary>
@@ -218,7 +231,7 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 
 			 PictureBox^ pb = (PictureBox^)sender;
 			 System::Drawing::Point point = (System::Drawing::Point)pb->Tag;
-			 Piece *piece = Board::getInstance().get_piece(::Point(point.X, point.Y));
+			 Piece *piece = board->get_piece(::Point(point.X, point.Y));
 			 if (piece->color != myColor)
 				 return;
 
@@ -228,13 +241,13 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 				 // New piece selected
 				 pb->BackColor = Color::Aqua;
 				 pbSelected = pb;
-				 Board::TreeNodePtr treeNode = Board::getInstance().possible_jumps(piece, 1);
+				 Board::TreeNodePtr treeNode = board->possible_jumps(piece, 1);
 				 // If there are jumps to make, dont worry about possible moves
 				 if (treeNode->jumps[Node::TOP_LEFT] != nullptr || treeNode->jumps[Node::TOP_RIGHT] != nullptr ||
 					 treeNode->jumps[Node::BOTTOM_LEFT] != nullptr || treeNode->jumps[Node::BOTTOM_RIGHT])
 					 possibleJumps = new Board::TreeNodePtr(treeNode);
 				 else
-					 possibleMoves = new Board::TreeNodePtr(Board::getInstance().possible_moves(piece));
+					 possibleMoves = new Board::TreeNodePtr(board->possible_moves(piece));
 			 }
 			 else if (pb == pbSelected)
 			 {
@@ -310,7 +323,7 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 					 
 					 bool crowned = crownIfNeeded(x, y);
 					 // if there are more jumps to make, select piece again
-					 Board::TreeNodePtr treeNode = Board::getInstance().possible_jumps(Board::getInstance().get_piece(::Point(x,y)), 1);
+					 Board::TreeNodePtr treeNode = board->possible_jumps(board->get_piece(::Point(x,y)), 1);
 					 if (!crowned && (treeNode->jumps[Node::TOP_LEFT] != nullptr || treeNode->jumps[Node::TOP_RIGHT] != nullptr ||
 						 treeNode->jumps[Node::BOTTOM_LEFT] != nullptr || treeNode->jumps[Node::BOTTOM_RIGHT]))
 					 {

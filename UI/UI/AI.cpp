@@ -3,14 +3,14 @@
 #include "../../Board.h"
 
 
-AI::AI(Piece::Color color, BoardForm^ boardForm) : m_boardForm(boardForm), myColor(color)
+AI::AI(Piece::Color color, BoardForm^ boardForm) : m_boardForm(boardForm), myColor(color), board(boardForm->getBoard())
 {
 }
 
 void AI::play()
 {
 	// Get possible jumps
-	auto jumps = Board::getInstance().jumps_by_color(myColor);
+	auto jumps = board.jumps_by_color(myColor);
 	if (jumps.size() > 0)
 	{
 		Random^ r = gcnew Random();
@@ -30,14 +30,14 @@ void AI::play()
 				}
 			}
 
-			nodePtr = Board::getInstance().possible_jumps(piece, 1);
+			nodePtr = board.possible_jumps(piece, 1);
 		} while ((!crowned) && (nodePtr->jumps[Node::TOP_LEFT] || nodePtr->jumps[Node::TOP_RIGHT] || 
 			     nodePtr->jumps[Node::BOTTOM_LEFT] || nodePtr->jumps[Node::BOTTOM_RIGHT]));
 	}
 	else
 	{
-		// No jumps. Lets try to make a move
-		auto moves = Board::getInstance().moves_by_color(myColor);
+		// No jumps to make. Lets try to make a move
+		auto moves = board.moves_by_color(myColor);
 		if (moves.size() > 0)
 		{
 			Random^ r = gcnew Random();

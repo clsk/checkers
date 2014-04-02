@@ -59,6 +59,8 @@ class Board
 public:
     typedef std::shared_ptr<::TreeNode> TreeNodePtr;
 	typedef std::map<::Point, Node*, PointCompare> NodesType;
+	Board();
+	~Board();
 
 	Node* get_node(const ::Point& point);
 	Piece* get_piece(const ::Point& point);
@@ -82,25 +84,16 @@ public:
 	std::vector<TreeNodePtr> jumps_by_color(Piece::Color color, uint8_t depth = 1);
 	bool has_possible_jumps(Piece::Color color);
 	void create_pieces();
-	static Board& getInstance()
-	{
-		if (instance == nullptr)
-			instance = new Board();
-
-		return *instance;
-	}
 
 	Piece *red_pieces[PIECES_COUNT];
 	Piece *black_pieces[PIECES_COUNT];
 private:
-	Board();
     TreeNodePtr build_tree_node(Node* pos, Node* killed = nullptr);
 	TreeNodePtr discover_move(TreeNodePtr node, uint8_t direction);
 	bool discover_jump(TreeNodePtr tree_node, Piece::Color color, uint8_t direction, uint8_t depth);
 	void discover_jumps(TreeNodePtr tree_node, Piece::Color color, bool is_king, uint8_t depth);
 	void link_adjacent_nodes(Node* node);
 	NodesType nodes;	
-	static Board * instance;
 };
 
 #endif
