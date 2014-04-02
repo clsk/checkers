@@ -34,6 +34,11 @@ namespace UI {
 		}
 		~BoardForm()
 		{
+			if (components)
+			{
+				delete components;
+			}
+
 			if (possibleJumps)
 				delete possibleJumps;
 			if (possibleMoves)
@@ -123,14 +128,6 @@ namespace UI {
 			 return false;
 		}
 
-	protected:
-		~BoardForm()
-		{
-			if (components)
-			{
-				delete components;
-			}
-		}
 	private: System::Windows::Forms::TableLayoutPanel^  tplBoard;
 
 
