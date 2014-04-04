@@ -324,7 +324,7 @@ Board::TreeNodePtr Board::build_tree_node(Node* pos, Node* killed)
 Board::TreeNodePtr Board::possible_jumps(Piece* piece, uint8_t depth)
 {
 	// Build possible jumps
-	auto start = build_tree_node(piece->location);
+	TreeNodePtr start = build_tree_node(piece->location);
 	discover_jumps(start, piece->color, piece->is_king, depth);
 
 	return start;
@@ -372,10 +372,10 @@ bool Board::has_possible_jumps(Piece::Color color)
 	return false;
 }
 
-inline bool Board::discover_jump(TreeNodePtr root_node, Piece::Color color, uint8_t direction, uint8_t depth)
+inline Board::TreeNodePtr Board::discover_jump(TreeNodePtr root_node, Piece::Color color, uint8_t direction)
 {
 	if (root_node == nullptr)
-		return false;
+		return nullptr;
 
 	Node* tree_node = root_node->pos->adjacents[direction];
 	if (tree_node != nullptr && tree_node->piece != nullptr && tree_node->piece->color != color)
@@ -383,12 +383,11 @@ inline bool Board::discover_jump(TreeNodePtr root_node, Piece::Color color, uint
 		// We have a piece, now check for emptiness in [direction]
 		if (tree_node->adjacents[direction] != nullptr && tree_node->adjacents[direction]->piece == nullptr)
 		{
-			root_node->jumps[direction] = build_tree_node(tree_node->adjacents[direction], tree_node);
-			return true;
+			return build_tree_node(tree_node->adjacents[direction], tree_node);
 		}
 	}
 
-	return false;
+	return nullptr;
 }
 
 void Board::discover_jumps(TreeNodePtr tree_node, Piece::Color color, bool is_king, uint8_t depth)
@@ -409,18 +408,172 @@ void Board::discover_jumps(TreeNodePtr tree_node, Piece::Color color, bool is_ki
 		oright = Node::BOTTOM_RIGHT;
 	}
 
-	if (discover_jump(tree_node, color, left, depth))
-		discover_jumps(tree_node->jumps[left], color, is_king, depth-1);
+	TreeNodePtr jump = discover_jump(tree_node, color, left);
+	if (jump != nullptr && jump->pos->adjacents[oright] != tree_node->killed)
+	{
+		tree_node->jumps[left] = jump;
+		discover_jumps(jump, color, is_king, depth - 1);
+	}
 
-	if (discover_jump(tree_node, color, right, depth))
-		discover_jumps(tree_node->jumps[right], color, is_king, depth-1);
+	jump = discover_jump(tree_node, color, right);
+	if (jump != nullptr && jump->pos->adjacents[oleft] != tree_node->killed)
+	{
+		tree_node->jumps[right] = jump;
+		discover_jumps(jump, color, is_king, depth - 1);
+	}
 
 	if (is_king)
 	{
-		if (discover_jump(tree_node, color, oleft, depth))
-			discover_jumps(tree_node->jumps[oleft], color, is_king, depth-1);
+		jump = discover_jump(tree_node, color, oleft);
+		if (jump != nullptr && jump->pos->adjacents[right] != tree_node->killed)
+		{
+			tree_node->jumps[oleft] = jump;
+			discover_jumps(jump, color, is_king, depth - 1);
+		}
 
-		if (discover_jump(tree_node, color, oright, depth))
-			discover_jumps(tree_node->jumps[oright], color, is_king, depth-1);
+		jump = discover_jump(tree_node, color, oright);
+		if (jump != nullptr && jump->pos->adjacents[left] != tree_node->killed)
+		{
+			tree_node->jumps[oright] = jump;
+			discover_jumps(jump, color, is_king, depth - 1);
+		}
 	}
+}
+
+std::pair<uint8_t, Board::TreeNodePtr> Board::longest_jump(Piece* piece)
+{
+	TreeNodePtr root = build_tree_node(piece->location);
+	std::pair<uint8_t, TreeNodePtr> longest_jump = discover_longest_jump(root, piece->color, piece->is_king);
+	if (longest_jump.first > 0)
+	{
+		root->jumps[root->longest_jump] = longest_jump.second;
+		return std::pair<uint8_t, TreeNodePtr>(longest_jump.first, root);
+	}
+	else
+		return longest_jump;
+}
+
+std::pair<uint8_t, Board::TreeNodePtr> Board::discover_longest_jump(TreeNodePtr tree_node, Piece::Color color, bool is_king)
+{
+
+	int left, right, oleft, oright;
+	if (color == Piece::Red) {
+		left = Node::BOTTOM_LEFT;
+		right = Node::BOTTOM_RIGHT;
+		oleft = Node::TOP_LEFT;
+		oright = Node::TOP_RIGHT;
+	} else {
+		left = Node::TOP_LEFT;
+		right = Node::TOP_RIGHT;
+		oleft = Node::BOTTOM_LEFT;
+		oright = Node::BOTTOM_RIGHT;
+	}
+
+	std::pair<uint8_t, TreeNodePtr> longest_jump, last_jump;
+	TreeNodePtr jump = discover_jump(tree_node, color, left);
+	if (jump != nullptr && jump->pos->adjacents[oright] != tree_node->killed)
+	{
+		tree_node->longest_jump = left;
+		longest_jump.first = 1;
+		longest_jump.second = jump;
+
+
+		last_jump = discover_longest_jump(jump, color, is_king);
+		if (last_jump.first > 0)
+		{
+			// If there were more jumps discovered
+			// add to longest_jump acount and attach node to tree
+			longest_jump.first += last_jump.first;
+			jump->jumps[jump->longest_jump] = last_jump.second;
+		}
+	}
+	else
+	{
+		longest_jump.first = 0;
+		longest_jump.second = TreeNodePtr(nullptr);
+	}
+
+
+	jump = discover_jump(tree_node, color, right);
+	if (jump != nullptr && jump->pos->adjacents[oleft] != tree_node->killed)
+	{
+		last_jump = discover_longest_jump(jump, color, is_king);
+		if (last_jump.first+1 > longest_jump.first)
+		{
+			tree_node->longest_jump = right;
+			longest_jump.first = 1;
+			longest_jump.second = jump;
+
+			if (last_jump.first > 0)
+			{
+				longest_jump.first += last_jump.first;
+				jump->jumps[jump->longest_jump] = last_jump.second;
+			}
+
+		}
+	}
+
+	if (is_king)
+	{
+		jump = discover_jump(tree_node, color, oleft);
+		if (jump != nullptr && jump->pos->adjacents[right] != tree_node->killed)
+		{
+			last_jump = discover_longest_jump(jump, color, is_king);
+			if (last_jump.first + 1 > longest_jump.first)
+			{
+				tree_node->longest_jump = oleft;
+				longest_jump.first = 1;
+				longest_jump.second = jump;
+
+				if (last_jump.first > 0)
+				{
+					longest_jump.first += last_jump.first;
+					jump->jumps[jump->longest_jump] = last_jump.second;
+				}
+			}
+		}
+
+		jump = discover_jump(tree_node, color, oright);
+		if (jump != nullptr && jump->pos->adjacents[left] != tree_node->killed)
+		{
+			last_jump = discover_longest_jump(jump, color, is_king);
+			if (last_jump.first + 1 > longest_jump.first)
+			{
+				tree_node->longest_jump = oright;
+				longest_jump.first = 1;
+				longest_jump.second = jump;
+
+				if (last_jump.first > 0)
+				{
+					longest_jump.first += last_jump.first;
+					jump->jumps[jump->longest_jump] = last_jump.second;
+				}
+			}
+		}
+	}
+
+	return longest_jump;
+}
+
+
+std::pair<uint8_t, Board::TreeNodePtr> Board::longest_jump_by_color(Piece::Color color)
+{
+	Piece ** pieces = nullptr;
+	if (color == Piece::Color::Red)
+		pieces = red_pieces;
+	else
+		pieces = black_pieces;
+
+	std::pair<uint8_t, TreeNodePtr> ljump(0, TreeNodePtr(nullptr));
+	for (uint8_t i = 0; i < PIECES_COUNT; i++)
+	{
+		if (pieces[i] == nullptr)
+			continue;
+
+		auto last_jump(longest_jump(pieces[i]));
+		if (last_jump.first > ljump.first)
+			ljump = last_jump;
+	}
+
+	return ljump;
 }

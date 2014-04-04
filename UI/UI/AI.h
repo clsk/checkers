@@ -14,7 +14,7 @@ public:
 	virtual void play();
 	virtual ~AI() {}
 
-private:
+protected:
 	BoardForm^ m_boardForm;
 	Piece::Color myColor;
 	Board& board;

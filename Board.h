@@ -42,15 +42,16 @@ struct Node
 {
 	Node() { piece = nullptr; memset(adjacents, 0, 4); }
 	::Point pos;
-	Piece *piece; // null if no piece present
+	Piece* piece; // null if no piece present
 	static const uint8_t BOTTOM_LEFT = 0, BOTTOM_RIGHT = 1, TOP_LEFT = 2, TOP_RIGHT = 3;
-	Node *adjacents[4];
+	Node* adjacents[4];
 };
 
 struct TreeNode
 {
-    Node *pos;
-    Node *killed;
+    Node* pos;
+    Node* killed;
+	uint8_t longest_jump = UINT8_MAX; // used store index of longest jump
 	std::shared_ptr<TreeNode> jumps[4];
 };
 
@@ -81,7 +82,9 @@ public:
 	std::vector<TreeNodePtr> moves_by_color(Piece::Color color);
 
     TreeNodePtr possible_jumps(Piece* piece, uint8_t depth = -1);
+	std::pair<uint8_t, TreeNodePtr> longest_jump(Piece* piece);
 	std::vector<TreeNodePtr> jumps_by_color(Piece::Color color, uint8_t depth = 1);
+	std::pair<uint8_t, TreeNodePtr> longest_jump_by_color(Piece::Color color);
 	bool has_possible_jumps(Piece::Color color);
 	void create_pieces();
 
@@ -90,8 +93,10 @@ public:
 private:
     TreeNodePtr build_tree_node(Node* pos, Node* killed = nullptr);
 	TreeNodePtr discover_move(TreeNodePtr node, uint8_t direction);
-	bool discover_jump(TreeNodePtr tree_node, Piece::Color color, uint8_t direction, uint8_t depth);
+	TreeNodePtr discover_jump(TreeNodePtr tree_node, Piece::Color color, uint8_t direction);
 	void discover_jumps(TreeNodePtr tree_node, Piece::Color color, bool is_king, uint8_t depth);
+	std::pair<uint8_t, TreeNodePtr> discover_longest_jump(TreeNodePtr tree_node, Piece::Color color, bool is_king);
+
 	void link_adjacent_nodes(Node* node);
 	NodesType nodes;	
 };

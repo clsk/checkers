@@ -104,7 +104,9 @@ namespace UI {
 		{
 			 // delete killed piece
 			 board->remove_piece(nodePtr->killed->piece);
-			 tplBoard->Controls->Remove(tplBoard->GetControlFromPosition(nodePtr->killed->pos.x + 1, nodePtr->killed->pos.y + 1));
+			 PictureBox^ pb = (PictureBox^)tplBoard->GetControlFromPosition(nodePtr->killed->pos.x + 1, nodePtr->killed->pos.y + 1);
+			 tplBoard->Controls->Remove(pb);
+			 pb->~PictureBox();
 
 			 // Move to new place
 			 movePiece(from, System::Drawing::Point(nodePtr->pos->pos.x, nodePtr->pos->pos.y));
@@ -242,9 +244,13 @@ private: System::Void piece_MouseClick(System::Object^  sender, System::Windows:
 				 // If there are jumps to make, dont worry about possible moves
 				 if (treeNode->jumps[Node::TOP_LEFT] != nullptr || treeNode->jumps[Node::TOP_RIGHT] != nullptr ||
 					 treeNode->jumps[Node::BOTTOM_LEFT] != nullptr || treeNode->jumps[Node::BOTTOM_RIGHT])
+				 {
 					 possibleJumps = new Board::TreeNodePtr(treeNode);
+				 }
 				 else
+				 {
 					 possibleMoves = new Board::TreeNodePtr(board->possible_moves(piece));
+				 }
 			 }
 			 else if (pb == pbSelected)
 			 {

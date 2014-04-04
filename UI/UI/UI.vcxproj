@@ -104,6 +104,9 @@
     <EmbeddedResource Include="BoardForm.resx">
       <DependentUpon>BoardForm.h</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.h</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Image Include="black.png" />
