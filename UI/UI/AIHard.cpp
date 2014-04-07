@@ -66,7 +66,6 @@ void AIHard::play()
 	{
 		if (best_move->longest_jump == UINT8_MAX) // this is a simple move
 		{
-			//board.move_piece(best_move->pos->piece, best_move->pos, best_move->jumps[best_move_dir]->pos);
 			m_boardForm->movePiece(System::Drawing::Point(best_move->pos->pos.x, best_move->pos->pos.y),
 									 System::Drawing::Point(best_move->jumps[best_move_dir]->pos->pos.x, best_move->jumps[best_move_dir]->pos->pos.y));
 			m_boardForm->crownIfNeeded(best_move->jumps[best_move_dir]->pos->pos.x, best_move->jumps[best_move_dir]->pos->pos.y);

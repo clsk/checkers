@@ -20,6 +20,7 @@ namespace UI {
 	public ref class BoardForm : public System::Windows::Forms::Form
 	{
 		bool myTurn = false;
+		bool has_jumps = false;
 		Piece::Color myColor = Piece::Color::Red;
 
 	public:
@@ -50,10 +51,15 @@ namespace UI {
 		void play()
 		{
 			myTurn = true;
-			if (board->has_possible_jumps(myColor))
+			has_jumps = board->has_possible_jumps(myColor);
+			if (has_jumps)
+			{
 				statusLabel->Text = "Make a jump";
+			}
 			else
+			{
 				statusLabel->Text = "Make a move";
+			}
 		}
 
 		Board& getBoard() { return *board; }
@@ -342,7 +348,7 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 					 }
 				 }
 			 }
-			 else if (possibleMoves != nullptr)
+			 else if (possibleMoves != nullptr && has_jumps == false)
 			 {
 				 if ((possibleMoves->get()->jumps[Node::TOP_LEFT] != nullptr && possibleMoves->get()->jumps[Node::TOP_LEFT]->pos->pos.x == x && possibleMoves->get()->jumps[Node::TOP_LEFT]->pos->pos.y == y) ||
 					 (possibleMoves->get()->jumps[Node::TOP_RIGHT] != nullptr && possibleMoves->get()->jumps[Node::TOP_RIGHT]->pos->pos.x == x && possibleMoves->get()->jumps[Node::TOP_RIGHT]->pos->pos.y == y) ||

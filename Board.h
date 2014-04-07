@@ -100,6 +100,7 @@ private:
 	void discover_jumps(TreeNodePtr tree_node, Piece::Color color, bool is_king, uint8_t depth);
 	std::pair<uint8_t, TreeNodePtr> discover_longest_jump(TreeNodePtr tree_node, Piece::Color color, bool is_king);
 	int8_t heuristic(Piece::Color max_color, Piece::Color min_color);
+	int8_t Board::get_color_points(Piece::Color color);
 
 	void link_adjacent_nodes(Node* node);
 	NodesType nodes;	

@@ -601,9 +601,31 @@ std::pair<uint8_t, Board::TreeNodePtr> Board::longest_jump_by_color(Piece::Color
 	return ljump;
 }
 
+inline int8_t Board::get_color_points(Piece::Color color)
+{
+	Piece **pieces;
+	if (color == Piece::Red)
+		pieces = red_pieces;
+	else
+		pieces = black_pieces;
+
+	int8_t count = 0;
+	for (uint8_t i = 0; i < PIECES_COUNT; i++)
+	{
+		if (pieces[i] != nullptr)
+		{
+			count++;
+			if (pieces[i]->is_king)
+				count++;
+		}
+	}
+
+	return count;
+}
+
 inline int8_t Board::heuristic(Piece::Color max_color, Piece::Color min_color)
 {
-	return get_piece_count(max_color) - get_piece_count(min_color);
+	return get_color_points(max_color) - get_color_points(min_color);
 }
 
 int8_t Board::minimax(MoveMemento& memento, uint8_t depth, Piece::Color max_color, Piece::Color min_color, bool maximizing)
@@ -659,5 +681,8 @@ int8_t Board::minimax(MoveMemento& memento, uint8_t depth, Piece::Color max_colo
 		}
 	}
 
-	return best_value;
+	if (best_value == INT8_MAX || best_value == INT8_MIN)
+		return heuristic(max_color, min_color);
+	else
+		return best_value;
 }
