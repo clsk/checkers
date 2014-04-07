@@ -82,6 +82,7 @@
     <ClCompile Include="..\..\MoveMemento.cpp" />
     <ClCompile Include="..\..\Piece.cpp" />
     <ClCompile Include="AI.cpp" />
+    <ClCompile Include="AIHard.cpp" />
     <ClCompile Include="AIMedium.cpp" />
     <ClCompile Include="BoardForm.cpp" />
     <ClCompile Include="MainForm.cpp" />
@@ -91,6 +92,7 @@
     <ClInclude Include="..\..\MoveMemento.h" />
     <ClInclude Include="..\..\Piece.h" />
     <ClInclude Include="AI.h" />
+    <ClInclude Include="AIHard.h" />
     <ClInclude Include="AIMedium.h" />
     <ClInclude Include="BoardForm.h">
       <FileType>CppForm</FileType>

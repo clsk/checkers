@@ -2,11 +2,13 @@
 #include "Piece.h"
 #include "MoveMemento.h"
 #include <iostream>
+#include <algorithm>
 
 using std::cout;
 using std::endl;
 using std::shared_ptr;
 using std::make_shared;
+using std::max;
 
 
 
@@ -112,6 +114,24 @@ Piece* Board::get_piece(const Point& point)
 		return node->piece;
 
 	return nullptr;
+}
+
+uint8_t Board::get_piece_count(Piece::Color color)
+{
+	Piece ** pieces = nullptr;
+	if (color == Piece::Color::Red)
+		pieces = red_pieces;
+	else
+		pieces = black_pieces;
+
+	uint8_t count = 0;
+	for (uint8_t i = 0; i < PIECES_COUNT; i++)
+	{
+		if (pieces[i] != nullptr)
+			count++;
+	}
+
+	return count;
 }
 
 void Board::move_piece(Piece* piece, Node* from, Node* to)
@@ -313,7 +333,7 @@ std::vector<Board::TreeNodePtr> Board::moves_by_color(Piece::Color color)
 	return moves;
 }
 
-Board::TreeNodePtr Board::build_tree_node(Node* pos, Node* killed)
+inline Board::TreeNodePtr Board::build_tree_node(Node* pos, Node* killed)
 {
 	auto tree_node = make_shared<TreeNode>();
 	tree_node->pos = pos;
@@ -440,7 +460,7 @@ void Board::discover_jumps(TreeNodePtr tree_node, Piece::Color color, bool is_ki
 	}
 }
 
-std::pair<uint8_t, Board::TreeNodePtr> Board::longest_jump(Piece* piece)
+inline std::pair<uint8_t, Board::TreeNodePtr> Board::longest_jump(Piece* piece)
 {
 	TreeNodePtr root = build_tree_node(piece->location);
 	std::pair<uint8_t, TreeNodePtr> longest_jump = discover_longest_jump(root, piece->color, piece->is_king);
@@ -576,4 +596,65 @@ std::pair<uint8_t, Board::TreeNodePtr> Board::longest_jump_by_color(Piece::Color
 	}
 
 	return ljump;
+}
+
+inline int8_t Board::heuristic(Piece::Color max_color, Piece::Color min_color)
+{
+	return get_piece_count(max_color) - get_piece_count(min_color);
+}
+
+int8_t Board::minimax(MoveMemento& memento, uint8_t depth, Piece::Color max_color, Piece::Color min_color, bool maximizing)
+{
+	if (depth == 0)
+		return heuristic(max_color, min_color);
+
+	int8_t best_value = maximizing ? INT8_MIN : INT8_MAX;
+
+	Piece::Color op_color = maximizing ? max_color : min_color;
+	bool has_jumps = has_possible_jumps(op_color);
+	Piece ** pieces = op_color == Piece::Color::Red ? red_pieces : black_pieces;
+
+	for (uint8_t i = 0; i < PIECES_COUNT; i++)
+	{
+		if (pieces[i] == nullptr)
+			continue;
+
+		if (has_jumps)
+		{
+			// Assume longest jump
+			std::pair<uint8_t, TreeNodePtr> optimum_jump = longest_jump(pieces[i]);
+			if (optimum_jump.first > 0)
+			{
+				memento.make_longest_jump(optimum_jump.second);
+
+				if (maximizing)
+					best_value = std::max(best_value, minimax(memento, depth - 1, max_color, min_color, false));
+				else
+					best_value = std::min(best_value, minimax(memento, depth - 1, max_color, min_color, true));
+
+				memento.rollback(optimum_jump.first);
+			}
+		}
+		else
+		{
+			// If player can't make any jumps, check for best move
+			TreeNodePtr moves = possible_moves(pieces[i]);
+			for (uint8_t j = 0; j < 4; j++)
+			{
+				if (moves->jumps[j] != nullptr)
+				{
+					memento.move(moves->pos, moves->jumps[j]->pos);
+
+					if (maximizing)
+						best_value = std::max(best_value, minimax(memento, depth - 1, max_color, min_color, false));
+					else
+						best_value = std::min(best_value, minimax(memento, depth - 1, max_color, min_color, true));
+
+					memento.rollback(1);
+				}
+			}
+		}
+	}
+
+	return best_value;
 }

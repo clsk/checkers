@@ -65,6 +65,7 @@ public:
 
 	Node* get_node(const ::Point& point);
 	Piece* get_piece(const ::Point& point);
+	uint8_t get_piece_count(Piece::Color color);
 
 	void crown_piece(Piece* piece);
 	void crown_piece(const ::Point& point); 
@@ -88,6 +89,8 @@ public:
 	bool has_possible_jumps(Piece::Color color);
 	void create_pieces();
 
+	int8_t minimax(MoveMemento& memento, uint8_t depth, Piece::Color max_color, Piece::Color min_color, bool maximizing);
+
 	Piece *red_pieces[PIECES_COUNT];
 	Piece *black_pieces[PIECES_COUNT];
 private:
@@ -96,6 +99,7 @@ private:
 	TreeNodePtr discover_jump(TreeNodePtr tree_node, Piece::Color color, uint8_t direction);
 	void discover_jumps(TreeNodePtr tree_node, Piece::Color color, bool is_king, uint8_t depth);
 	std::pair<uint8_t, TreeNodePtr> discover_longest_jump(TreeNodePtr tree_node, Piece::Color color, bool is_king);
+	int8_t heuristic(Piece::Color max_color, Piece::Color min_color);
 
 	void link_adjacent_nodes(Node* node);
 	NodesType nodes;	

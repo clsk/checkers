@@ -2,6 +2,7 @@
 #include "BoardForm.h"
 #include "AI.h"
 #include "AIMedium.h"
+#include "AIHard.h"
 namespace UI {
 
 	using namespace System;
@@ -92,6 +93,7 @@ namespace UI {
 			this->btHard->TabIndex = 2;
 			this->btHard->Text = L"Hard";
 			this->btHard->UseVisualStyleBackColor = true;
+			this->btHard->Click += gcnew System::EventHandler(this, &MainForm::btHard_Click);
 			// 
 			// btOnline
 			// 
@@ -127,6 +129,13 @@ namespace UI {
 private: System::Void btMedium_Click(System::Object^  sender, System::EventArgs^  e) {
 			UI::BoardForm^ boardForm = gcnew UI::BoardForm(Piece::Color::Red);
 			AI^ ai = gcnew AIMedium(Piece::Color::Black, boardForm);
+			boardForm->myEnemy = ai;
+			boardForm->Show();
+			boardForm->play();
+}
+private: System::Void btHard_Click(System::Object^  sender, System::EventArgs^  e) {
+			UI::BoardForm^ boardForm = gcnew UI::BoardForm(Piece::Color::Red);
+			AI^ ai = gcnew AIHard(Piece::Color::Black, boardForm, 5);
 			boardForm->myEnemy = ai;
 			boardForm->Show();
 			boardForm->play();
