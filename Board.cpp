@@ -325,8 +325,8 @@ std::vector<Board::TreeNodePtr> Board::moves_by_color(Piece::Color color)
 			continue;
 
 		TreeNodePtr treePtr = possible_moves(pieces[i]);
-		if (treePtr->jumps[Node::TOP_LEFT] || treePtr->jumps[Node::TOP_RIGHT] ||
-			treePtr->jumps[Node::BOTTOM_LEFT] || treePtr->jumps[Node::BOTTOM_RIGHT])
+		if (treePtr->jumps[Node::TOP_LEFT] != nullptr || treePtr->jumps[Node::TOP_RIGHT] != nullptr ||
+			treePtr->jumps[Node::BOTTOM_LEFT] != nullptr || treePtr->jumps[Node::BOTTOM_RIGHT] != nullptr)
 			moves.push_back(treePtr);
 	}
 
@@ -381,8 +381,11 @@ bool Board::has_possible_jumps(Piece::Color color)
 	else
 		pieces = black_pieces;
 
-	for (uint8_t i = 0; i < PIECES_COUNT && pieces[i] != nullptr; i++)
+	for (uint8_t i = 0; i < PIECES_COUNT; i++)
 	{
+		if (pieces[i] == nullptr)
+			continue;
+
 		TreeNodePtr treePtr = possible_jumps(pieces[i], 1);
 		if (treePtr->jumps[Node::TOP_LEFT] || treePtr->jumps[Node::TOP_RIGHT] ||
 			treePtr->jumps[Node::BOTTOM_LEFT] || treePtr->jumps[Node::BOTTOM_RIGHT])

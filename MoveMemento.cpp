@@ -79,7 +79,8 @@ bool MoveMemento::jump(Node* from, Node* to, Piece* killed)
 	{
 		piece->is_king = true;
 	}
-	MMove move(from->piece, from, to, crowned, killed, killed->location);
+	MMove move(piece, from, to, crowned, killed, killed->location);
+	moves.push(move);
 	remove_piece(killed);
 
 	return crowned;

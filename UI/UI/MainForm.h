@@ -135,7 +135,7 @@ private: System::Void btMedium_Click(System::Object^  sender, System::EventArgs^
 }
 private: System::Void btHard_Click(System::Object^  sender, System::EventArgs^  e) {
 			UI::BoardForm^ boardForm = gcnew UI::BoardForm(Piece::Color::Red);
-			AI^ ai = gcnew AIHard(Piece::Color::Black, boardForm, 5);
+			AI^ ai = gcnew AIHard(Piece::Color::Black, boardForm, 7);
 			boardForm->myEnemy = ai;
 			boardForm->Show();
 			boardForm->play();
