@@ -1,0 +1,17 @@
+message Header
+{
+}
+
+message point
+{
+	required int32 x = 1;
+	required int32 y = 2;
+}
+
+message move
+{
+	required point from = 1;
+	required point to = 2;
+	optional point killed = 3;
+	required bool finished = 4;
+}

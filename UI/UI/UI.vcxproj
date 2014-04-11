@@ -52,13 +52,19 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Users\Alan\Documents\Visual Studio 2012\Projects\checkers\UI\UI\google;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies />
+      <AdditionalDependencies>libprotobuf.lib;libprotobuf-lite.lib;libprotoc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>main</EntryPointSymbol>
+      <AdditionalLibraryDirectories>DebugLibs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -69,11 +75,16 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies />
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -85,7 +96,13 @@
     <ClCompile Include="AIHard.cpp" />
     <ClCompile Include="AIMedium.cpp" />
     <ClCompile Include="BoardForm.cpp" />
+    <ClCompile Include="Client.cpp" />
+    <ClCompile Include="DialogHostPort.cpp" />
     <ClCompile Include="MainForm.cpp" />
+    <ClCompile Include="Messages.pb.cc" />
+    <ClCompile Include="NetOponent.cpp" />
+    <ClCompile Include="Networker.cpp" />
+    <ClCompile Include="Server.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Board.h" />
@@ -97,14 +114,26 @@
     <ClInclude Include="BoardForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="Client.h" />
+    <ClInclude Include="DialogHostPort.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="IEnemy.h" />
+    <ClInclude Include="INet.h" />
     <ClInclude Include="MainForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="Messages.pb.h" />
+    <ClInclude Include="NetOponent.h" />
+    <ClInclude Include="Networker.h" />
+    <ClInclude Include="Server.h" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="BoardForm.resx">
       <DependentUpon>BoardForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DialogHostPort.resx">
+      <DependentUpon>DialogHostPort.h</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.h</DependentUpon>
@@ -115,6 +144,9 @@
     <Image Include="black_king.png" />
     <Image Include="red.png" />
     <Image Include="red_king.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Messages.proto" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

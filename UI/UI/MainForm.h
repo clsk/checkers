@@ -3,6 +3,11 @@
 #include "AI.h"
 #include "AIMedium.h"
 #include "AIHard.h"
+#include "NetOponent.h"
+#include "Server.h"
+#include "Client.h"
+#include "DialogHostPort.h"
+
 namespace UI {
 
 	using namespace System;
@@ -11,6 +16,7 @@ namespace UI {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
+
 
 	/// <summary>
 	/// Summary for MainForm
@@ -41,7 +47,9 @@ namespace UI {
 	private: System::Windows::Forms::Button^  btEasy;
 	private: System::Windows::Forms::Button^  btMedium;
 	private: System::Windows::Forms::Button^  btHard;
-	private: System::Windows::Forms::Button^  btOnline;
+	private: System::Windows::Forms::Button^  btOnlineServer;
+	private: System::Windows::Forms::Button^  btPlayOnline;
+
 	protected:
 
 	protected:
@@ -62,7 +70,8 @@ namespace UI {
 			this->btEasy = (gcnew System::Windows::Forms::Button());
 			this->btMedium = (gcnew System::Windows::Forms::Button());
 			this->btHard = (gcnew System::Windows::Forms::Button());
-			this->btOnline = (gcnew System::Windows::Forms::Button());
+			this->btOnlineServer = (gcnew System::Windows::Forms::Button());
+			this->btPlayOnline = (gcnew System::Windows::Forms::Button());
 			this->SuspendLayout();
 			// 
 			// btEasy
@@ -95,21 +104,33 @@ namespace UI {
 			this->btHard->UseVisualStyleBackColor = true;
 			this->btHard->Click += gcnew System::EventHandler(this, &MainForm::btHard_Click);
 			// 
-			// btOnline
+			// btOnlineServer
 			// 
-			this->btOnline->Location = System::Drawing::Point(79, 177);
-			this->btOnline->Name = L"btOnline";
-			this->btOnline->Size = System::Drawing::Size(119, 49);
-			this->btOnline->TabIndex = 3;
-			this->btOnline->Text = L"Play Online!";
-			this->btOnline->UseVisualStyleBackColor = true;
+			this->btOnlineServer->Location = System::Drawing::Point(79, 177);
+			this->btOnlineServer->Name = L"btOnlineServer";
+			this->btOnlineServer->Size = System::Drawing::Size(119, 49);
+			this->btOnlineServer->TabIndex = 3;
+			this->btOnlineServer->Text = L"Start Online Server";
+			this->btOnlineServer->UseVisualStyleBackColor = true;
+			this->btOnlineServer->Click += gcnew System::EventHandler(this, &MainForm::btOnlineServer_Click);
+			// 
+			// btPlayOnline
+			// 
+			this->btPlayOnline->Location = System::Drawing::Point(79, 232);
+			this->btPlayOnline->Name = L"btPlayOnline";
+			this->btPlayOnline->Size = System::Drawing::Size(119, 49);
+			this->btPlayOnline->TabIndex = 4;
+			this->btPlayOnline->Text = L"Play Online!";
+			this->btPlayOnline->UseVisualStyleBackColor = true;
+			this->btPlayOnline->Click += gcnew System::EventHandler(this, &MainForm::btPlayOnline_Click);
 			// 
 			// MainForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(284, 247);
-			this->Controls->Add(this->btOnline);
+			this->ClientSize = System::Drawing::Size(288, 290);
+			this->Controls->Add(this->btPlayOnline);
+			this->Controls->Add(this->btOnlineServer);
 			this->Controls->Add(this->btHard);
 			this->Controls->Add(this->btMedium);
 			this->Controls->Add(this->btEasy);
@@ -120,25 +141,49 @@ namespace UI {
 		}
 #pragma endregion
 	private: System::Void btEasy_Click(System::Object^  sender, System::EventArgs^  e) {
-			UI::BoardForm^ boardForm = gcnew UI::BoardForm(Piece::Color::Red);
-			AI^ ai = gcnew AI(Piece::Color::Black, boardForm);
-			boardForm->myEnemy = ai;
+			UI::BoardForm^ boardForm = gcnew UI::BoardForm(Piece::Color::Red, false);
+			IEnemy^ enemy = gcnew AI(Piece::Color::Black, boardForm);
+			boardForm->myEnemy = enemy;
 			boardForm->Show();
 			boardForm->play();
 	}
 private: System::Void btMedium_Click(System::Object^  sender, System::EventArgs^  e) {
-			UI::BoardForm^ boardForm = gcnew UI::BoardForm(Piece::Color::Red);
-			AI^ ai = gcnew AIMedium(Piece::Color::Black, boardForm);
-			boardForm->myEnemy = ai;
+			UI::BoardForm^ boardForm = gcnew UI::BoardForm(Piece::Color::Red, false);
+			IEnemy^ enemy = gcnew AIMedium(Piece::Color::Black, boardForm);
+			boardForm->myEnemy = enemy;
 			boardForm->Show();
 			boardForm->play();
 }
 private: System::Void btHard_Click(System::Object^  sender, System::EventArgs^  e) {
-			UI::BoardForm^ boardForm = gcnew UI::BoardForm(Piece::Color::Red);
-			AI^ ai = gcnew AIHard(Piece::Color::Black, boardForm, 7);
-			boardForm->myEnemy = ai;
+			UI::BoardForm^ boardForm = gcnew UI::BoardForm(Piece::Color::Red, false);
+			IEnemy^ enemy = gcnew AIHard(Piece::Color::Black, boardForm, 8);
+			boardForm->myEnemy = enemy;
 			boardForm->Show();
 			boardForm->play();
+}
+private: System::Void btOnlineServer_Click(System::Object^  sender, System::EventArgs^  e) {
+			UI::BoardForm^ boardForm = gcnew UI::BoardForm(Piece::Color::Red, true);
+			Server^ server = gcnew Server(5449);
+			IEnemy^ enemy = gcnew NetOponent(server, boardForm);
+			server->start();
+			boardForm->myEnemy = enemy;
+			boardForm->Show();
+}
+private: System::Void btPlayOnline_Click(System::Object^  sender, System::EventArgs^  e) {
+			 UI::BoardForm^ boardForm = gcnew UI::BoardForm(Piece::Color::Black, true);
+
+			 DialogHostPort^ dialog = gcnew DialogHostPort();
+			 if (dialog->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+			 {
+				 String^ hostname = dialog->hostname;
+				 int port = UInt32::Parse(dialog->port);
+				 Client^ client = gcnew Client(hostname, port);
+				 IEnemy^ enemy = gcnew NetOponent(client, boardForm);
+				 client->connect();
+				 boardForm->myEnemy = enemy;
+				 boardForm->Show();
+			 }
+
 }
 };
 }

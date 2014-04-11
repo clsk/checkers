@@ -16,6 +16,9 @@
     <Filter Include="Game">
       <UniqueIdentifier>{40c98f45-e120-415e-a6d0-aed6bd2b902b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{a2b78815-dfc8-4943-93cf-03d25f15f077}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainForm.cpp">
@@ -40,6 +43,24 @@
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="AIHard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NetOponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Server.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Networker.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Client.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Messages.pb.cc">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="DialogHostPort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -71,6 +92,27 @@
     <ClInclude Include="AIHard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NetOponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="INet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Server.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Networker.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Client.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Messages.pb.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="DialogHostPort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="BoardForm.resx">
@@ -93,5 +135,8 @@
     <Image Include="black_king.png">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Messages.proto" />
   </ItemGroup>
 </Project>

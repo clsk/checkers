@@ -75,6 +75,7 @@ public:
 
 	void remove_piece(const ::Point& location);
 	void remove_piece(Piece* piece);
+    TreeNodePtr build_tree_node(Node* pos, Node* killed = nullptr);
 
     void print();
 
@@ -94,7 +95,6 @@ public:
 	Piece *red_pieces[PIECES_COUNT];
 	Piece *black_pieces[PIECES_COUNT];
 private:
-    TreeNodePtr build_tree_node(Node* pos, Node* killed = nullptr);
 	TreeNodePtr discover_move(TreeNodePtr node, uint8_t direction);
 	TreeNodePtr discover_jump(TreeNodePtr tree_node, Piece::Color color, uint8_t direction);
 	void discover_jumps(TreeNodePtr tree_node, Piece::Color color, bool is_king, uint8_t depth);

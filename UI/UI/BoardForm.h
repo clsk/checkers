@@ -1,7 +1,10 @@
 #pragma once
 #include "../../Board.h"
 #include "IEnemy.h"
+#include "Messages.pb.h"
+#include "NetOponent.h"
 #include <iostream>
+#include <list>
 
 #define BOARD_MARGIN 13
 #define SQUARE_DIMENSIONS 58 // 58x58
@@ -21,15 +24,19 @@ namespace UI {
 	{
 		bool myTurn = false;
 		bool has_jumps = false;
-		Piece::Color myColor = Piece::Color::Red;
+		bool reportingMoves;
 
 	public:
 		IEnemy^ myEnemy;
+		std::list<move>* moves;
+		Piece::Color myColor;
 
-		BoardForm(Piece::Color color) : myColor(color), board(new Board())
+		BoardForm(Piece::Color color, bool _reportingMoves) : myColor(color), board(new Board()), reportingMoves(_reportingMoves)
 		{
 			InitializeComponent();
 			board->create_pieces();
+			if (reportingMoves)
+				moves = new std::list<move>();
 
 			loadPieces();
 		}
@@ -46,6 +53,8 @@ namespace UI {
 				delete possibleMoves;
 
 			delete board;
+			if (reportingMoves)
+				delete moves;
 		}
 
 		void play()
@@ -94,6 +103,31 @@ namespace UI {
 				pb->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &BoardForm::piece_MouseClick);
 			}
 
+		}
+
+		void registerMove(const ::Point& from, const ::Point& to)
+		{
+			point *f = new point();
+			f->set_x(from.x);
+			f->set_y(from.y);
+			point *t = new point();
+			t->set_x(to.x);
+			t->set_y(to.y);
+
+			move m;
+			m.set_allocated_from(f);
+			m.set_allocated_to(t);
+			m.set_finished(false);
+			moves->push_back(m);
+		}
+
+		void registerJump(const ::Point& from, const ::Point& to, const ::Point& killed)
+		{
+			registerMove(from, to);
+			point *k = new point();
+			k->set_x(killed.x);
+			k->set_y(killed.y);
+			moves->back().set_allocated_killed(k);
 		}
 
 		void movePiece(System::Drawing::Point from, System::Drawing::Point to)
@@ -326,6 +360,10 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 					 System::Drawing::Point from = (System::Drawing::Point)pbSelected->Tag;
 
 					 jumpPiece(from, newPos);
+
+					 if (reportingMoves)
+						 registerJump(::Point(from.X, from.Y), newPos->pos->pos, newPos->killed->pos);
+
 					 // delete possibleJumps
 					 delete possibleJumps;
 					 possibleJumps = nullptr;
@@ -344,6 +382,9 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 					 {
 						 pbSelected = nullptr;
 						 myTurn = false;
+						 if (reportingMoves)
+							 moves->back().set_finished(true);
+
 						 myEnemy->play();
 					 }
 				 }
@@ -362,6 +403,12 @@ private: System::Void tplBoard_MouseClick(System::Object^  sender, System::Windo
 					 delete possibleMoves;
 					 possibleMoves = nullptr;
 					 myTurn = false;
+					 if (reportingMoves)
+					 {
+						 registerMove(::Point(from.X, from.Y), ::Point(x,y));
+						 moves->back().set_finished(true);
+					 }
+
 					 myEnemy->play();
 				 }
 			 }
